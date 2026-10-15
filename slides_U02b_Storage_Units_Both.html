@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Where the Gigabytes Went — Storage Units &amp; File Size</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css" rel="stylesheet"/>
+<style>
+:root{
+  --dark:#151B3C; --light:#F4F6FB; --accent1:#17B3A3; --accent2:#F0655B;
+  --accent3:#F2B53C; --navy:#222B5A; --ice:#E8EEF9; --white:#fff;
+}
+.reveal{font-family:'Calibri','Segoe UI','PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-size:26px;}
+.reveal h1,.reveal h2,.reveal h3{font-family:'Georgia','Times New Roman','PingFang SC','Microsoft YaHei',serif; text-transform:none; letter-spacing:-.02em;}
+.reveal section{text-align:left;}
+.dk{color:var(--ice);} .dk h1,.dk h2,.dk h3{color:var(--white);}
+.lt{color:var(--navy);} .lt h2,.lt h3{color:var(--navy);}
+.bar{position:absolute; top:0; left:0; right:0; height:5px;}
+.card{background:var(--white); border-radius:10px; padding:16px 20px; box-shadow:0 4px 12px rgba(0,0,0,.07); text-align:left;}
+.rule{background:var(--white); border-radius:8px; padding:11px 16px; box-shadow:0 3px 10px rgba(0,0,0,.05); border-left:5px solid var(--accent1); margin:10px 0; text-align:left; font-size:.74em;}
+.rule.accent2{border-left-color:var(--accent2);} .rule.accent3{border-left-color:var(--accent3);} .rule.navy{border-left-color:var(--navy);}
+.dk .rule{background:rgba(255,255,255,.06); color:var(--ice);}
+.two-col{display:flex; gap:28px; align-items:flex-start;} .two-col>*{flex:1;}
+.three-col{display:flex; gap:18px;} .three-col>*{flex:1;}
+.sgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; font-size:.6em;}
+.scard{background:rgba(255,255,255,.08); border-radius:10px; padding:14px; text-align:left; border-top:3px solid var(--accent1);}
+.smaller{font-size:.7em;}
+.center{text-align:center;}
+.accent1{color:var(--accent1);} .accent2{color:var(--accent2);} .accent3{color:var(--accent3);}
+.mono{font-family:'Courier New',monospace; font-weight:bold;}
+
+.badges{position:absolute; top:-14px; right:0; display:flex; gap:6px; z-index:5;}
+.bg{font-size:.44em; font-weight:bold; letter-spacing:.03em; padding:3px 12px; border-radius:20px; font-family:'Calibri','Segoe UI',sans-serif;}
+.bg-both{background:rgba(23,179,163,.15); color:var(--accent1); border:1.5px solid var(--accent1);}
+.bg-hole{background:rgba(242,181,60,.15); color:#B8860B; border:1.5px solid var(--accent3);}
+.dk .bg-both{background:rgba(23,179,163,.22); color:#5FD6C9;}
+.dk .bg-hole{color:var(--accent3);}
+
+.dig{position:absolute; bottom:-34px; left:50%; transform:translateX(-50%); font-size:.5em; color:#98a0c0; animation:bob 2s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(5px);}}
+
+#obj-btn{background:rgba(255,255,255,.08); color:var(--ice); border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:5px 14px; cursor:pointer; font-size:.42em; opacity:.55; transition:opacity .2s;}
+#obj-btn:hover{opacity:1;}
+
+/* ===== py-cell: live Python on the slide ===== */
+.pycell{background:var(--navy); border-radius:12px; padding:10px 12px 12px; box-shadow:0 4px 14px rgba(0,0,0,.14); text-align:left;}
+.pycell .pybar{display:flex; gap:8px; align-items:center; margin-bottom:6px;}
+.pycell .pydots{display:flex; gap:5px;}
+.pycell .pydots i{width:9px; height:9px; border-radius:50%; display:block;}
+.pyta{width:100%; box-sizing:border-box; background:#1b234d; color:var(--ice); border:none; border-radius:8px;
+  font-family:'Courier New',monospace; font-weight:bold; font-size:.62em; line-height:1.5; padding:10px 12px; resize:none; outline:none; display:block;}
+.pyta[readonly]{color:#aeb8dd;}
+.pyta:focus{box-shadow:0 0 0 2px var(--accent1);}
+.pyrun{background:var(--accent1); color:#fff; border:none; border-radius:7px; padding:4px 16px; font-size:.5em; font-weight:bold; cursor:pointer; font-family:'Calibri','Segoe UI',sans-serif;}
+.pyrun:hover{background:#12907f;}
+.pyrun:disabled{background:#5a6394; cursor:wait;}
+.pylock{background:transparent; color:#98a0c0; border:1.5px solid #454e82; border-radius:7px; padding:3px 12px; font-size:.5em; font-weight:bold; cursor:pointer;}
+.pylock:hover{color:var(--accent3); border-color:var(--accent3);}
+.pyout{background:#0d1230; color:#5FD6C9; border-radius:8px; font-family:'Courier New',monospace; font-weight:bold;
+  font-size:.58em; line-height:1.5; padding:9px 12px; margin:8px 0 0; min-height:1.4em; white-space:pre-wrap; text-align:left;}
+.pyout .crash{color:var(--accent2);}
+.pyin-lbl{color:#5FD6C9;}
+.pyin{background:#1b234d; border:2px solid var(--accent1); border-radius:6px; color:var(--ice);
+  font-family:'Courier New',monospace; font-weight:bold; font-size:1em; padding:1px 8px; width:130px; outline:none; vertical-align:middle; margin-left:2px;}
+.pystate{font-size:.46em; color:#98a0c0; margin-left:auto;}
+
+/* ===== 🧾 outside the exam hall — the honest ledger ===== */
+.toll{background:#fffaf0; border:2px solid var(--accent3); border-radius:10px; padding:9px 14px; text-align:left; font-size:.58em; line-height:1.5; color:var(--navy); margin:8px 0;}
+.toll .th{display:inline-block; font-weight:bold; font-size:.86em; letter-spacing:.05em; color:#8a6100; margin-bottom:4px;}
+.toll .yes{color:#0d7a6e; font-weight:bold;} .toll .no{color:#c0392b; font-weight:bold;}
+.dk .toll{background:rgba(242,181,60,.12); color:var(--ice);}
+.dk .toll .yes{color:#5FD6C9;} .dk .toll .no{color:#ff9a90;}
+
+/* ===== 📐 the divergence box ===== */
+.diverge{background:#f7f5ff; border:2px dashed #b3a6e8; border-radius:10px; padding:10px 15px; text-align:left; font-size:.56em; line-height:1.55; color:var(--navy); margin:10px 0;}
+.diverge .dh{display:inline-block; font-weight:bold; font-size:.85em; letter-spacing:.04em; color:#6d4fd0; margin-bottom:3px;}
+
+/* ===== the hook: three panels ===== */
+.panels{display:flex; gap:12px; justify-content:center; align-items:stretch;}
+.pan{flex:1; background:var(--white); border-radius:12px; box-shadow:0 5px 16px rgba(0,0,0,.1); padding:11px 10px; text-align:center; border-top:4px solid #c6cde4;}
+.pan .who{font-size:.5em; color:#8a92b2; letter-spacing:.06em; font-weight:bold;}
+.pan .num{font-family:'Courier New',monospace; font-weight:bold; font-size:1.45em; color:var(--navy); line-height:1.35;}
+.pan .sub{font-size:.43em; color:#8a92b2; line-height:1.45;}
+.pan.box{border-top-color:var(--accent3);}
+.pan.win{border-top-color:var(--accent2);} .pan.win .num{color:var(--accent2);}
+.pan.mac{border-top-color:var(--accent1);} .pan.mac .num{color:var(--accent1);}
+.pan.pen{border-top-color:#7c5cbf;} .pan.pen .num{color:#7c5cbf; font-family:Georgia,serif; font-weight:normal;}
+
+/* ===== the unit ladder ===== */
+.lad{display:flex; align-items:flex-end; justify-content:center; gap:0; font-size:.58em;}
+.lad .u{background:var(--white); border:2px solid var(--accent1); border-radius:9px; padding:6px 9px; text-align:center; font-weight:bold; color:var(--navy); min-width:56px;}
+.lad .u small{display:block; font-weight:normal; color:#8a92b2; font-size:.78em;}
+.lad .u.base{border-color:var(--navy);}
+.lad .u.hi{border-color:var(--accent3); border-style:dashed;}
+.lad .x{color:var(--accent2); font-weight:bold; padding:0 6px 8px; font-family:'Courier New',monospace; font-size:.9em; white-space:nowrap;}
+
+/* ===== two ladders + drift ===== */
+.dual{width:100%; border-collapse:collapse; font-size:.56em;}
+.dual th{background:var(--navy); color:var(--white); padding:5px 10px; text-align:left; font-weight:600;}
+.dual td{background:var(--white); padding:4px 10px; border-bottom:1px solid #e3e7f2;}
+.dual td.m{font-family:'Courier New',monospace; font-weight:bold;}
+.dual td.gap{font-weight:bold; color:var(--accent2); text-align:right;}
+.dual tr.hot td{background:#fff3f2;}
+
+/* ===== 🎮 The Weigh-In ===== */
+.wi-wrap{background:#fdfcf6; border-radius:12px; padding:10px 12px; box-shadow:0 4px 14px rgba(0,0,0,.1); min-height:330px; display:flex; flex-direction:column; gap:9px;}
+.wi-stage{font-size:.62em; font-weight:bold; color:var(--navy); background:rgba(242,181,60,.18); border:2px solid var(--accent3); border-radius:24px; padding:4px 26px; text-align:center;}
+.wi-prog{display:flex; gap:7px; justify-content:center;}
+.wi-prog .pd{width:11px; height:11px; border-radius:50%; background:#d4d9ea; transition:all .2s;}
+.wi-prog .pd.done{background:var(--accent1);}
+.wi-prog .pd.cur{background:var(--accent3); transform:scale(1.3);}
+.wi-ring{display:flex; align-items:stretch; gap:12px; justify-content:center;}
+.wi-side{flex:1; background:var(--white); border:3px solid #c6cde4; border-radius:12px; padding:10px 8px; text-align:center; transition:all .15s;}
+.wi-side .q{font-size:.86em; font-weight:bold; color:var(--navy); line-height:1.25;}
+.wi-side .b{font-family:'Courier New',monospace; font-weight:bold; font-size:.52em; color:#8a92b2; margin-top:6px; min-height:1.3em;}
+.wi-side.win{border-color:var(--accent1); background:rgba(23,179,163,.09);}
+.wi-side.win .b{color:#0d7a6e;}
+.wi-side.tie{border-color:var(--accent3); background:rgba(242,181,60,.12);}
+.wi-vs{align-self:center; font-size:.7em; font-weight:bold; color:#c6cde4; font-family:'Georgia',serif;}
+.wi-btns{display:flex; gap:10px; justify-content:center;}
+.wi-b{background:var(--white); border:2px solid #c6cde4; border-radius:10px; padding:7px 20px; font-size:.58em; font-weight:bold; color:var(--navy); cursor:pointer;}
+.wi-b:hover{border-color:var(--accent1);}
+.wi-b.no{animation:shake .4s; border-color:var(--accent2);}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+.wi-boss{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+.wi-boss .wi-b{padding:11px 8px; font-size:.62em; text-align:center;}
+.wi-say{font-size:.56em; font-weight:bold; min-height:2.6em; text-align:center; color:var(--navy); line-height:1.45;}
+.wi-say.ok{color:#0d7a6e;} .wi-say.bad{color:var(--accent2);}
+.wi-tada{font-size:1.0em; font-weight:bold; color:var(--accent3); text-align:center; animation:pop .5s ease-out;}
+@keyframes pop{0%{transform:scale(.3); opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1); opacity:1;}}
+.wi-new{background:var(--navy); color:var(--white); border:none; border-radius:8px; padding:5px 16px; font-size:.5em; font-weight:bold; cursor:pointer; align-self:center;}
+.wi-new:hover{background:var(--accent1);}
+
+/* ===== bit-depth demo (wrapper holds ONLY canvas + absolute labels) ===== */
+.bdw{position:relative; display:block; width:100%; margin:9px 0 0;}
+.bdw canvas{width:100%; display:block; border-radius:9px; box-shadow:0 3px 12px rgba(0,0,0,.14);}
+.bdw .bl{position:absolute; left:12px; font-size:.4em; font-weight:bold; color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.7); pointer-events:none; letter-spacing:.02em;}
+.bdc{display:flex; gap:14px; align-items:center; justify-content:center; margin-top:9px; font-size:.55em;}
+.bdc input[type=range]{width:210px; accent-color:#F0655B;}
+.bd-read{font-family:'Courier New',monospace; font-weight:bold; color:var(--navy); min-width:270px;}
+.bd-btn{background:var(--navy); color:#fff; border:none; border-radius:8px; padding:5px 15px; font-size:.95em; font-weight:bold; cursor:pointer; font-family:'Calibri','Segoe UI',sans-serif;}
+.bd-btn:hover{background:var(--accent1);}
+.bd-btn.on{background:var(--accent2);}
+.bd-cap{font-size:.52em; text-align:center; color:#7a83a8; line-height:1.5; margin:8px 0 0; min-height:3em;}
+
+/* ===== staged calculation ===== */
+.calc{font-family:'Courier New',monospace; font-weight:bold; font-size:.62em; line-height:1.95; color:var(--navy);}
+.calc .st{display:block;}
+.calc .lbl{display:inline-block; width:112px; color:#8a92b2; font-size:.82em; font-family:'Calibri','Segoe UI',sans-serif; font-weight:bold;}
+.calc .res{color:var(--accent1);}
+.calc .fin{color:var(--accent2); font-size:1.12em;}
+
+.vtab{width:100%; border-collapse:collapse; font-size:.62em;}
+.vtab th{background:var(--navy); color:var(--white); padding:7px 12px; text-align:left;}
+.vtab td{background:var(--white); padding:6px 12px; border-bottom:1px solid #e3e7f2;}
+.xt{font-size:.6em; width:100%; border-collapse:collapse;}
+.xt td,.xt th{padding:6px 10px; border-bottom:1px solid #e3e7f2; background:var(--white); vertical-align:top;}
+.xt th{background:var(--navy); color:var(--white);}
+.pbtn{background:var(--navy); color:var(--white); border:none; border-radius:10px; padding:16px 38px; font-size:.8em; font-weight:bold; cursor:pointer;}
+.pbtn:hover{background:var(--accent1);}
+.src{font-size:.5em; color:#98a0c0; margin-top:12px;}
+.tick{display:inline-block; border:1.6px solid #667; width:13px; height:13px; vertical-align:-2px; margin-right:5px; border-radius:3px;}
+
+#fs-btn{position:fixed; bottom:18px; right:18px; z-index:99; background:rgba(30,39,97,.7); color:var(--ice); border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:18px; opacity:.7; transition:opacity .2s;}
+#fs-btn:hover{opacity:1;}
+:fullscreen #fs-btn,:-webkit-full-screen #fs-btn{display:none;}
+#py-chip{position:fixed; bottom:18px; left:18px; z-index:99; font-size:15px; font-weight:bold; padding:6px 14px; border-radius:20px; background:rgba(30,39,97,.75); color:#98a0c0;}
+#py-chip.ready{color:#5FD6C9;}
+
+/* ← back / next → : a teacher must be able to move in both directions (2026-08-12) */
+.g-skip{background:transparent; color:#98a0c0; border:1.5px solid #ccd3e8; border-radius:7px;
+  padding:2px 11px; font-size:.42em; font-weight:bold; cursor:pointer; margin-left:6px;
+  font-family:'Calibri','Segoe UI',sans-serif; line-height:1.5;}
+.g-skip:hover{color:#17B3A3; border-color:#17B3A3;}
+.g-navwrap{float:right;}
+
+/* ═══ PQ: typed real-paper stages (shared retrofit, 2026-08-22) ═══ */
+.pq-lbl{font-size:.48em; font-weight:bold; color:var(--navy); margin:3px 0 1px; text-align:left;}
+.pq-ta{width:100%; box-sizing:border-box; background:var(--white); color:var(--navy); border:2px solid #c6cde4; border-radius:8px;
+  font-family:'Calibri','Segoe UI',sans-serif; font-size:.52em; line-height:1.45; padding:7px 10px; resize:none; outline:none; display:block;}
+.pq-ta:focus{border-color:var(--accent1);}
+.pq-vals{display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:5px; font-size:.5em; font-weight:bold; color:var(--navy); text-align:left; align-items:center;}
+.pq-in{background:var(--white); border:2px solid #c6cde4; border-radius:7px; padding:3px 9px; font-size:1em;
+  font-family:'Courier New',monospace; font-weight:bold; color:var(--navy); outline:none;}
+.pq-in:focus{border-color:var(--accent1);}
+.pq-in.ok{border-color:var(--accent1); background:rgba(23,179,163,.08);}
+.pq-in.bad{border-color:var(--accent2); background:rgba(240,101,91,.08);}
+.pq-opts{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+.pq-opt{background:var(--white); border:2px solid #c6cde4; border-radius:9px; padding:5px 14px; font-size:.5em; font-weight:bold; color:var(--navy); cursor:pointer; font-family:'Calibri','Segoe UI',sans-serif;}
+.pq-opt.on{border-color:var(--accent3);}
+.pq-opt.right{border-color:var(--accent1); background:rgba(23,179,163,.1);}
+.pq-go{background:var(--accent1); color:#fff; border:none; border-radius:8px; padding:5px 18px; font-size:.5em; font-weight:bold; cursor:pointer; margin-top:6px; font-family:'Calibri','Segoe UI',sans-serif;}
+.pq-go:hover{background:#12907f;}
+.pq-res{margin-top:6px; text-align:left; max-height:215px; overflow-y:auto; padding-right:4px;}
+.pq-tot{font-size:.6em; font-weight:bold; color:var(--navy);}
+.pq-two{display:flex; gap:14px; align-items:flex-start;} .pq-two>*{flex:1;}
+.pq-mp{list-style:none; margin:4px 0 0; padding:0; font-size:.46em; line-height:1.5; color:var(--navy);}
+.pq-mp .y{color:#0d7a6e; font-weight:bold;} .pq-mp .n{color:var(--accent2); font-weight:bold;}
+.pq-model{background:#eef7f5; border-left:4px solid var(--accent1); border-radius:8px; padding:6px 10px; font-size:.46em; line-height:1.5; color:var(--navy); margin-top:5px;}
+.pq-llm{font-size:.46em; line-height:1.5; color:var(--navy);}
+.pq-cons{border-radius:8px; padding:5px 10px; margin-top:4px;}
+.pq-cons.agree{background:rgba(23,179,163,.1); border:1.5px solid rgba(23,179,163,.4);}
+.pq-cons.split{background:rgba(242,181,60,.12); border:1.5px solid rgba(242,181,60,.5);}
+.pq-pick{background:var(--white); border:1.5px solid #c6cde4; border-radius:7px; padding:1px 10px; font-weight:bold; color:var(--navy); cursor:pointer; margin:0 4px;}
+.pq-pick.on{border-color:var(--accent1); color:var(--accent1);}
+#llmchip{position:fixed; top:18px; right:18px; z-index:99; font-size:14px; font-weight:bold; padding:6px 14px;
+  border-radius:20px; background:rgba(30,39,97,.75); color:#98a0c0; cursor:pointer; border:none;}
+#llmchip.on{color:#5FD6C9;} #llmchip.off{color:#F2B53C;}
+#llmhelp{display:none; position:fixed; top:56px; right:18px; z-index:99; width:340px; background:#fff; color:#222B5A;
+  border:2px solid #F2B53C; border-radius:12px; padding:12px 16px; font-size:14px; line-height:1.5; box-shadow:0 8px 30px rgba(0,0,0,.25); text-align:left;}
+#llmhelp b{color:#B8860B;} #llmhelp .x{float:right; cursor:pointer; font-weight:bold; color:#98a0c0;}
+
+.reveal .slides section.pq-grow{top:40px !important;}
+
+</style>
+<style>/* Third edition: keep the original typography, palette and widget forms. */
+.reveal .slides section{box-sizing:border-box}
+.reveal .slides section.pq-grow,.reveal .slides section:has(.marker){top:30px!important}
+.reveal .slides section:has(#bf-row){top:30px!important}
+.lanes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;font-size:15px;line-height:1.3;text-align:left}
+.lanes>div{border-top:2px solid var(--accent1);padding:7px 10px;background:rgba(23,179,163,.07)}
+.lanes>div+div{border-color:var(--accent3);background:rgba(242,181,60,.08)}
+.lanes b{display:block;font-size:12px;letter-spacing:.04em;margin-bottom:3px}.lanes span{display:block}
+.dk .lanes{color:var(--ice)}.dk .card{background:rgba(255,255,255,.08);color:var(--ice)}
+.dig{position:static;transform:none!important;animation:none;font-size:15px;text-align:center;margin-top:9px}
+.investigate{font-size:18px!important;color:#626c91;margin:12px 0 0!important}
+.source{font-size:14px!important;color:#697496;line-height:1.35!important}.source a{color:#42769a}
+.plant{font-size:17px!important;background:rgba(242,181,60,.14);border-left:4px solid var(--accent3);padding:9px 12px}
+.cliff{font-size:24px!important;color:var(--accent3)}
+.lens{border-collapse:collapse;width:100%;font-size:20px!important;line-height:1.4}
+.lens th,.lens td{padding:12px 14px;border-bottom:1px solid #c9d0e0;text-align:left}.lens th{background:var(--navy);color:white}.lens td{background:white}
+.reveal details{font-size:20px;line-height:1.4;margin-top:12px}.reveal summary{cursor:pointer;color:#079385;font-weight:bold}
+.marker{font-size:18px;line-height:1.35}.mark-fields{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}.mark-fields label{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px}
+.marker input[type=text],.marker textarea{box-sizing:border-box;max-width:100%;font:19px 'Courier New',monospace;padding:7px;border:2px solid #bfc7df;border-radius:6px;color:var(--navy);background:white}
+.marker textarea{display:block;width:100%;height:58px;resize:vertical;max-height:100px}.marker input.ok{border-color:var(--accent1)}.marker input.bad{border-color:var(--accent2)}
+.mark-controls{display:flex;gap:10px;margin:10px 0}.marker button{font:inherit;cursor:pointer;background:var(--navy);color:white;border:0;border-radius:7px;padding:8px 15px}
+.mark-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mark-options button{text-align:left;background:#e6eaf5;color:var(--navy);border:2px solid transparent}.mark-options button.chosen{border-color:var(--accent2)}
+.mark-feedback{display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:17px;line-height:1.4}.mark-feedback:empty{display:none}.mark-feedback>div{background:white;padding:10px 12px;border-radius:8px}.mark-feedback ul{margin:5px 0 0 20px!important}.mark-score{font-size:25px;font-weight:bold;color:#088778}.human{display:block;padding:7px 0}.human input{margin-right:8px}.marker .muted{color:#6b7390;font-size:15px}
+.reveal .slides section p{line-height:1.4}
+.reveal .slides section#trick-ig,.reveal .slides section#reveal-ig,.reveal .slides section#encore-al{top:28px!important}
+.reveal .slides section#build-card-ig{top:25px!important}
+.reveal .slides section .wh-odo{align-items:center}.wh-side{min-width:0}
+.reveal .slides section .wh-say{font-size:18px;line-height:1.3}
+.reveal .slides section .wh-bres{min-height:24px}
+.reveal .slides section .marker p{font-size:18px}
+.reveal .slides section .transition-none{transition:none!important}
+.reveal .slides>section,.reveal .slides>section>section{transition-duration:180ms!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.reveal .slides section:has(.marker)>h2{margin:14px 0 16px}
+.reveal .slides section:has(.marker)>p{margin:12px 0}
+.reveal .slides section .mark-feedback p{margin:6px 0;font-size:17px}
+.mark-feedback ul{line-height:1.4}.marker textarea{resize:none}
+
+.reveal h2{font-size:1.55em;margin:22px 0}.reveal section>p{font-size:22px}
+.hook-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.hook-grid h3{font-size:30px;margin:9px 0}.hook-grid p{font-size:18px;margin:5px 0}.hook-grid b{font-size:20px}
+#weigh{background:white;border-radius:16px;padding:22px;text-align:center}.weigh-pair{display:flex;justify-content:center;gap:35px;margin:15px}.weigh-pair b{background:#e8eef9;border-radius:12px;padding:20px;font-size:36px;min-width:250px}.weigh-controls{display:flex;gap:12px;justify-content:center;margin:12px}.weigh-controls button,.reveal #aud-btns button{border:0;border-radius:8px;padding:12px 22px;background:var(--navy);color:white;font-size:20px;cursor:pointer}.weigh-controls button:disabled{opacity:.35}.weigh-feedback{min-height:55px;font-size:21px}.weigh-round{font-size:16px;color:#687392}
+#bit-depth canvas{max-height:176px;width:100%;object-fit:fill}#bit-depth #bd-cap{font-size:18px;line-height:1.4;margin:8px 0}#bit-depth #bd-read{font-size:19px}#bd-range{width:55%;margin:15px 20px 8px 0}#bd-hard{font-size:17px}
+#paper-ig,#paper-al{top:18px!important}.reveal #paper-ig>p,.reveal #paper-al>p{font-size:19px;margin:8px 0}.reveal #paper-ig h2,.reveal #paper-al h2{margin:18px 0 10px}
+.marker .ig-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.marker label{font-size:16px}.marker textarea{height:48px;font-size:17px}.marker .rubric{font-size:15px;line-height:1.3;background:white;padding:8px}.marker .rubric label{display:block;font-size:15px;margin:4px 0}.marker .human-note{font-size:15px;margin:6px 0}.marker input[type=text]{font-size:18px;padding:5px;width:100%}.marker .mark-score{font-size:21px;min-height:27px}.marker .mark-fields{margin:6px 0}.marker .mark-options{grid-template-columns:repeat(4,1fr)}.marker .mark-options button{font-size:17px;padding:8px}.marker .mark-controls{margin:8px 0}
+#size-machine .pyta{font-size:18px}#size-machine .two-col{gap:18px}#settle .pyta{font-size:19px}.pyout{max-height:120px;overflow:auto}.reveal .slides section .pyout{width:auto;box-shadow:none}.reveal #vocabulary h2{margin:20px 0}
+
+.reveal .rule{font-size:23px;line-height:1.4;padding:12px 17px}.reveal .big{font-size:34px;line-height:1.6}.reveal #title h2{font-size:64px;max-width:1000px}.reveal #title>p{font-size:27px}.reveal #title a{color:#5fd6c9}#title #obj-btn{font-size:18px;opacity:1}#title .dig{display:none}
+#hook .rule,#bit-depth .rule,#size-machine .rule,#sound-size .rule{font-size:21px}#bit-depth #bd-read{display:block;margin:6px 0}#bit-depth #bd-range{width:55%;margin:12px 0}#bit-depth #bd-hard{display:inline-block;margin:6px 0}#fs-btn{right:100px;bottom:15px}#settle .rule{font-size:21px}
+
+/* U-lane visual sweep, 20 September 2026: brief entrance motion; no extra clicks. */
+.reveal .slides section{transition-duration:220ms!important}
+.reveal .backgrounds .slide-background{transition-duration:220ms!important}
+.reveal .slides section.lt .card,.reveal .slides section.lt .rule{box-shadow:0 2px 8px rgba(34,43,90,.065)}
+.reveal .slides section.dk .card,.reveal .slides section.dk .rule{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.reveal .slides section .pycell{box-shadow:0 5px 16px rgba(21,27,60,.12)}
+.reveal .slides section .dig-link,.reveal .slides section .return-link{text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(23,179,163,.45)}
+.reveal .slides section button{transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease}
+.reveal .slides section button:focus-visible{outline:3px solid #f2b53c;outline-offset:3px}
+@keyframes u-enter{from{opacity:.15;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes u-rule{from{transform:scaleX(.94);opacity:.3}to{transform:scaleX(1);opacity:1}}
+@media(prefers-reduced-motion:no-preference){
+ .reveal:not(.none) .slides section.present:not(.stack)>:is(h1,h2){animation:u-enter .22s ease-out both}
+ .reveal:not(.none) .slides section.present:not(.stack)>:is(.rule,.card,.two-col,.three-col,.pycell,.xt,.vtab):not(.fragment){animation:u-enter .24s ease-out both;animation-delay:35ms}
+ .reveal:not(.none) .slides section.present:not(.stack)>.bar{transform-origin:left;animation:u-rule .24s ease-out both}
+}
+.reveal.none .slides section,.reveal.none .slides section *{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.reveal .slides section,.reveal .slides section *{animation:none!important;transition:none!important}}
+@media print{.reveal .slides section,.reveal .slides section *{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<div class="reveal"><div class="slides"><section><section class="dk" data-background-color="#151B3C" id="title"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>Where the Gigabytes Went</h2><p>Storage units, and the arithmetic of a file</p><div id="aud-btns"><button onclick="setAud('ig')">IGCSE 0478 ▶</button> <button onclick="setAud('al')">AS 9618 ▶</button></div><p id="aud-sub"></p><p id="aud-chip" style="display:none"></p><p class="small">→ main lesson · ↓ optional investigation</p><button id="obj-btn" onclick="Reveal.down()">🎯 objectives</button><div class="dig">↓ investigate · → continue</div></section><section class="lt" data-background-color="#F4F6FB" id="objectives"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>Today you will be able to</h2><div class="rule">Follow bits → bytes → binary storage units.</div><div class="rule">Explain how two unit systems can name the same byte count.</div><div class="rule">Count raw image and sound data; keep units attached.</div><div class="rule">Predict a change, then check it with a short Python calculation.</div><p data-aud="ig">IG: ladder through EiB; file calculations use 1024.</p><p data-aud="al">AS: binary and decimal prefixes through tera; bitmap estimates and size effects.</p></section></section><section class="lt" data-background-color="#F4F6FB" id="hook"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>One drive. Different labels.</h2><div class="hook-grid"><div class="card"><b>📦 Packaging</b><h3>256 GB</h3><p>256 billion advertised bytes</p></div><div class="card"><b>🖥 Binary display</b><h3>≈238. 4</h3><p>GiB; some tools label it “GB”</p></div><div class="card"><b>🍎 Decimal display</b><h3>256</h3><p>GB, before other deductions</p></div><div class="card"><b>🐧 GNU df</b><h3>-h / -H</h3><p>1024 / 1000 scaling</p></div></div><div class="rule">Which unit is each panel counting? Could the same byte count produce both numbers?</div><div class="rule">Illustrative displays: a real formatted volume may have less usable space. Tool and system conventions differ.</div><p class="source"><a href="https://support.apple.com/en-gb/102119" rel="noopener" target="_blank">Apple: storage capacity and formatted space</a></p><p class="source"><a href="https://www.gnu.org/s/coreutils/manual/html_node/df-invocation.html" rel="noopener" target="_blank">GNU: df display options</a></p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG calculations: 1024. AS: use the prefix named.</span></div><div><b>🏛 IN REALITY</b><span>Unit conversion changes the label; reserved or formatted space is a separate issue.</span></div></div></section><section class="lt" data-background-color="#F4F6FB" id="ladder"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>The ladder starts where binary stopped</h2><div class="rule"><b>4 bits = 1 nibble · 2 nibbles = 1 byte · 8 bits = 1 byte</b></div><div class="rule"><b class="big">byte → KiB → MiB → GiB → TiB</b></div><div class="rule">From byte upwards, each step holds <b>1024</b> of the previous unit. Going up: divide. Going down: multiply.</div><div class="rule">Say it with units: 3 MiB = 3 × 1024 KiB = 3072 KiB.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG: binary ladder through EiB. AS: binary/decimal through tera.</span></div><div><b>🏛 IN REALITY</b><span>Address width limits possible addresses; hardware need not populate every one.</span></div></div></section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="ig-high"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>Two more rungs for IG</h2><div class="rule"><b class="big">TiB → PiB → EiB</b></div><div class="rule">1 PiB = 1024 TiB. 1 EiB = 1024 PiB.</div><div class="rule">Predict: how many TiB are in 2 PiB? How many PiB are in half an EiB?</div><details><summary>Check the idea</summary><p>2048 TiB; 512 PiB. The step size stays the same.</p></details><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG: binary ladder through EiB. AS: binary/decimal through tera.</span></div><div><b>🏛 IN REALITY</b><span>Address width limits possible addresses; hardware need not populate every one.</span></div></div></section><section><section class="lt" data-background-color="#F4F6FB" id="two-ladders"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>Two ladders, one byte count</h2><table class="lens"><tr><th>Units</th><th>Binary: bytes</th><th>Decimal: bytes</th></tr><tr><td>KiB / kB</td><td>1024</td><td>1000</td></tr><tr><td>MiB / MB</td><td>1 048 576</td><td>1 000 000</td></tr><tr><td>GiB / GB</td><td>2³⁰</td><td>10⁹</td></tr><tr><td>TiB / TB</td><td>2⁴⁰</td><td>10¹²</td></tr></table><p data-aud="ig">IG: the decimal ladder explains the real-world puzzle; your syllabus file calculations use 1024.</p><p data-aud="al">AS: distinguish both prefixes and use the one named in the question.</p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG calculations: 1024. AS: use the prefix named.</span></div><div><b>🏛 IN REALITY</b><span>Unit conversion changes the label; reserved or formatted space is a separate issue.</span></div></div><div class="dig">↓ investigate · → continue</div></section><section class="lt" data-background-color="#F4F6FB" data-hole="true" id="addresses"><div class="badges"><span class="bg bg-both">↓ OPTIONAL INVESTIGATION</span></div><div class="bar"></div><h2>Why 1024?</h2><div class="rule">Ten binary address digits name <b>2¹⁰ = 1024</b> distinct patterns. That makes powers of two convenient capacities.</div><div class="rule"><b>Investigate:</b> a device implements only addresses 0–999. How many ten-bit patterns are unused? Does ten-bit addressing force every pattern to contain memory?</div><details><summary>Check the idea</summary><p>24 are unused. Address width bounds the number of distinct addresses; it does not force every address to be populated.</p></details><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG: binary ladder through EiB. AS: binary/decimal through tera.</span></div><div><b>🏛 IN REALITY</b><span>Address width limits possible addresses; hardware need not populate every one.</span></div></div></section><section class="lt" data-background-color="#F4F6FB" data-hole="true" id="reserve"><div class="badges"><span class="bg bg-both">↓ OPTIONAL INVESTIGATION</span></div><div class="bar"></div><h2>Two gaps that must stay separate</h2><div class="two-col"><div class="rule"><b>Unit conversion</b><br/>256 billion bytes ≈238. 4 GiB. Same bytes, a different-sized unit.</div><div class="rule"><b>Reserved capacity</b><br/>An SSD may keep capacity for controller work. Its amount depends on the product and configuration.</div></div><div class="rule">A toy drive has 512 GB raw capacity and exposes 400 GB. Predict its reserved capacity. Can a “256 GB” sticker alone tell you its raw flash capacity?</div><details><summary>Check the idea</summary><p>112 GB in the toy example. A retail capacity label alone does not establish raw capacity or a universal reserve percentage.</p></details><p class="source"><a href="https://semiconductor.samsung.com/resources/others/Samsung_SSD_845DC_04_Over-provisioning.pdf" rel="noopener" target="_blank">Samsung: over-provisioning and controller work</a></p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG calculations: 1024. AS: use the prefix named.</span></div><div><b>🏛 IN REALITY</b><span>Unit conversion changes the label; reserved or formatted space is a separate issue.</span></div></div></section><section class="lt" data-background-color="#F4F6FB" data-hole="true" id="dispute"><div class="badges"><span class="bg bg-both">↓ OPTIONAL INVESTIGATION</span></div><div class="bar"></div><h2>The label dispute reached court</h2><div class="rule">A 2006 court record in <i>Safier v. Western Digital</i> records a proposed settlement over drive-capacity labelling. Unit definitions mattered outside a classroom.</div><div class="rule"><b>Investigate:</b> 1 GiB is 1. 073741824 GB. Calculate (1. 073741824 − 1) ÷ 1, then divide the same difference by 1. 073741824. Why are the percentages different?</div><details><summary>Check the idea</summary><p>7. 37% relative to the smaller unit; 6. 87% relative to the larger one. State the denominator before claiming a percentage gap. Neither calculation removes bytes.</p></details><p class="source"><a href="https://www.govinfo.gov/content/pkg/USCOURTS-cand-3_05-cv-03353/pdf/USCOURTS-cand-3_05-cv-03353-4.pdf" rel="noopener" target="_blank">2006 court record and settlement notice</a></p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG calculations: 1024. AS: use the prefix named.</span></div><div><b>🏛 IN REALITY</b><span>Unit conversion changes the label; reserved or formatted space is a separate issue.</span></div></div></section></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="prefix-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>AS: name the ladder before calculating</h2><div class="rule">3 KiB = 3 × 1024 = <b>3072 bytes</b>.</div><div class="rule">3 kB = 3 × 1000 = <b>3000 bytes</b>.</div><div class="rule">Try: 2 TB in GB; 2 TiB in GiB. Explain why the multipliers differ.</div><details><summary>Check the idea</summary><p>2000 GB; 2048 GiB. Tera/giga are decimal; tebi/gibi are binary.</p></details><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG calculations: 1024. AS: use the prefix named.</span></div><div><b>🏛 IN REALITY</b><span>Unit conversion changes the label; reserved or formatted space is a separate issue.</span></div></div></section><section class="lt" data-background-color="#F4F6FB" id="settle"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>Settle the drive puzzle 🐍</h2><div class="rule">Predict which output is near 256 and which is near 238. Run; then change the byte count to <b>1 000 000 000 000</b>.</div><div class="pycell"><script class="pysrc" type="text/plain">bytes_on_the_drive = 256000000000
+
+print(bytes_on_the_drive / 1000 / 1000 / 1000)
+print(bytes_on_the_drive / 1024 / 1024 / 1024)</script></div><div class="rule">The same byte count is divided by different units. Formatting and reserved capacity are separate questions.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>IG calculations: 1024. AS: use the prefix named.</span></div><div><b>🏛 IN REALITY</b><span>Unit conversion changes the label; reserved or formatted space is a separate issue.</span></div></div></section><section class="lt" data-background-color="#F4F6FB" id="weigh-in"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>🎮 The Weigh-In</h2><p>Predict before clicking. Compare both quantities in the same unit.</p><div id="weigh"></div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Compare quantities in one common unit.</span></div><div><b>🏛 IN REALITY</b><span>For IG, decimal prefixes here explain real-world labels.</span></div></div></section><section><section class="lt" data-background-color="#F4F6FB" id="image-size"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>How big is an image?</h2><div class="rule">A pixel is one picture element; colour depth is the bits used to describe its colour.</div><div class="rule">Uncompressed pixel data = <b>width × height × bits per pixel</b>. The result is in bits.</div><div class="rule"><b>Our worked example:</b> 512 × 512 × 16 = 4 194 304 bits.</div><div class="rule">÷8 → 524 288 bytes. ÷1024 → <b>512 KiB</b>.</div><div class="rule">Keep the units beside each step. If depth is supplied in bytes, do not divide by eight again.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Count pixels×depth; distinguish bits from bytes.</span></div><div><b>🏛 IN REALITY</b><span>Raw pixels exclude headers, metadata and compression.</span></div></div><div class="dig">↓ investigate · → continue</div></section><section class="lt" data-background-color="#F4F6FB" data-hole="true" id="bit-depth"><div class="badges"><span class="bg bg-both">↓ OPTIONAL INVESTIGATION</span></div><div class="bar"></div><h2>Millions of colours — see the steps</h2><div class="rule">24-bit RGB uses eight bits per channel: 256³ = <b>16 777 216</b> possible combinations.</div><div class="rule">Predict what happens when the bottom strip gains one bit. Then compare the narrow-gradient hard case.</div><div class="bdw">
+<canvas id="bd-cv"></canvas>
+<span class="bl" id="bd-lt"> </span>
+<span class="bl" id="bd-lb"> </span>
+</div><input id="bd-range" max="8" min="1" type="range" value="3"/><span class="bd-read" id="bd-read"> </span><button class="bd-btn" id="bd-hard">try the hard case ▸</button><p class="bd-cap" id="bd-cap"> </p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Each extra bit doubles available values per channel.</span></div><div><b>🏛 IN REALITY</b><span>This canvas illustrates quantisation; it does not certify a 10-bit display.</span></div></div></section></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="header-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>AS: an estimate has assumptions</h2><div class="rule">The pixel calculation counts <b>uncompressed pixel data</b>. A file may also include a header, metadata, padding or compression.</div><div class="rule">A header can describe dimensions and colour depth so software knows how to interpret the data.</div><div class="rule">Try: 512 KiB of pixels plus a stated 1024-byte header. What is the total if no other overhead or compression applies?</div><details><summary>Check the idea</summary><p>513 KiB. Do not invent a header size when none is given; state the assumptions of the estimate.</p></details><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Count pixels×depth; distinguish bits from bytes.</span></div><div><b>🏛 IN REALITY</b><span>Raw pixels exclude headers, metadata and compression.</span></div></div></section><section class="lt" data-background-color="#F4F6FB" id="size-machine"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>Predict. Change. Run. 🐍</h2><div class="two-col"><div><div class="rule">Double width 512→1024. Predict the size.</div><div class="rule">Restore width; halve depth 16→8. Predict again.</div><div class="rule">Then use 4000×3000 at 24 bits; convert bytes into MiB.</div></div><div><div class="pycell"><script class="pysrc" type="text/plain">width = 512
+height = 512
+depth = 16
+
+bits = width * height * depth
+print(bits, "bits")
+print(bits / 8, "bytes")
+print(bits / 8 / 1024, "KiB")</script></div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Count pixels×depth; distinguish bits from bytes.</span></div><div><b>🏛 IN REALITY</b><span>Raw pixels exclude headers, metadata and compression.</span></div></div></section><section><section class="lt" data-background-color="#F4F6FB" id="sound-size"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>A sound file counts samples</h2><div class="rule">A sample records the signal at one instant. Sample rate counts samples per second; bit depth gives bits per sample.</div><div class="rule"><b>samples/second × bits/sample × seconds × channels</b> → bits of uncompressed sample data.</div><div class="rule">For the following example, assume <b>one channel</b>. 22 016 × 8 × 10 = 1 761 280 bits.</div><div class="rule">÷8 →220 160 bytes; ÷1024 →<b>215 KiB</b>.</div><div class="rule">Two channels would double this payload. Headers and compression are separate from this count.</div><p class="source">Worked from 0478 November 2024 /12 Q 2(c), ©UCLES; original prompt does not state channels.</p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use rate×depth×duration; state the channel assumption.</span></div><div><b>🏛 IN REALITY</b><span>This counts sample data; encoded files may include headers or compression.</span></div></div><div class="dig">↓ investigate · → continue</div></section><section class="lt" data-background-color="#F4F6FB" data-hole="true" id="photo"><div class="badges"><span class="bg bg-both">↓ OPTIONAL INVESTIGATION</span></div><div class="bar"></div><h2>Then why is the saved photo smaller?</h2><div class="rule">A 4000×3000 image at 24 bits has 36 000 000 bytes of raw pixels ≈34. 33 MiB.</div><div class="rule"><b>Investigate:</b> inspect an image’s dimensions and file size. Compare the raw-pixel estimate with the saved size. Identify its format.</div><div class="rule">Compression can make the saved file much smaller; headers and metadata can add bytes. The raw-pixel formula is <b>not a universal upper bound</b>.</div><details><summary>Check the idea</summary><p>A smaller JPEG does not mean pixels vanished by unit conversion. Encoding/compression changed what was stored. Keep this question for the compression lesson.</p></details><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Count pixels×depth; distinguish bits from bytes.</span></div><div><b>🏛 IN REALITY</b><span>Raw pixels exclude headers, metadata and compression.</span></div></div></section></section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="drill-ig"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>Your turn — units before arithmetic</h2><div class="rule">1. State the number of bytes in 1 KiB.</div><div class="rule">2. Name the unit equal to 1024 GiB.</div><div class="rule">3. Image: 1000×1000 pixels,2 <b>bytes</b> per pixel. Calculate its size in bytes. [2]</div><div class="rule">4. How many PiB are in 2 EiB?</div><p class="source">Q 3: 0478 March 2023 /12 Q 4(b), ©UCLES. Other prompts are ours.</p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="drill-answer-ig"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>Check each unit</h2><div class="rule">1. 1024 bytes. 2. tebibyte (TiB).</div><div class="rule">3. 1000×1000 =1 000 000 pixels; ×2 bytes =<b>2 000 000 bytes</b>.</div><div class="rule">4. 2048 PiB.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="drill-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>Your turn — units before arithmetic</h2><div class="rule">1. State the number of bytes in 1 KiB.</div><div class="rule">2. Name the unit equal to 1024 GiB.</div><div class="rule">3. Image: 1000×1000 pixels,2 <b>bytes</b> per pixel. Calculate its size in bytes. [2]</div><div class="rule">4. Which is larger: 3100 kB or 3 MiB? Show comparable byte counts.</div><p class="source">Q 3: 0478 March 2023 /12 Q 4(b), ©UCLES. Other prompts are ours.</p><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="drill-answer-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>Check each unit</h2><div class="rule">1. 1024 bytes. 2. tebibyte (TiB).</div><div class="rule">3. 1000×1000 =1 000 000 pixels; ×2 bytes =<b>2 000 000 bytes</b>.</div><div class="rule">4. 3 100 000 B &lt;3 145 728 B, so 3 MiB is larger.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="paper-ig"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>IG — count samples, then pixels</h2><p class="source">0478 November 2024 /12 Q 2(c) and March 2023 /12 Q 4(b), ©UCLES; contexts condensed.</p><p>A 10-second sound effect uses 22 016 Hz and 8 bits/sample. Assume one channel. Calculate its size in KiB, showing working. [3]</p><p>An image is 1000×1000 pixels with depth 2 bytes. Calculate its size in bytes, showing working. [2]</p><div id="mark-ig"></div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Up to 2 sound working marks; 1 image working mark.</span></div><div><b>🏛 IN REALITY</b><span>A value check cannot judge your reasoning; use the rubric honestly.</span></div></div></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="paper-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>AS — choose the right prefix</h2><p class="source">9618 June 2024 /12 Q 7(a) and /13 Q 1(a), ©UCLES; response layout adapted.</p><p>Identify the largest file size [1]. Then complete the four prefix/value statements [4].</p><div id="mark-al"></div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="lens-ig"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>IG — the exam shapes</h2><table class="lens"><tr><th>Shape</th><th>How the stem reads</th><th>Marks</th><th>Where marks die</th></tr><tr><td>Unit ladder</td><td>State the number/name of units.</td><td>1</td><td>Skipping a rung; confusing bits and bytes.</td></tr><tr><td>Image or sound size</td><td>Calculate…in the named unit. Show working.</td><td>2–3 here</td><td>Wrong depth unit, missing duration, wrong final unit.</td></tr></table><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="lens-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>AS — the exam shapes</h2><table class="lens"><tr><th>Shape</th><th>How the stem reads</th><th>Marks</th><th>Where marks die</th></tr><tr><td>Prefix definition</td><td>Complete: kibi has a…prefix.</td><td>1 each</td><td>Using binary and decimal interchangeably.</td></tr><tr><td>Compare sizes</td><td>Tick the largest file size.</td><td>1 here</td><td>Comparing bare numbers instead of common units.</td></tr><tr><td>Bitmap estimate</td><td>Estimate file size; describe an effect.</td><td>Follow scheme</td><td>Ignoring the stated depth/unit or given header.</td></tr></table><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-background-color="#F4F6FB" id="vocabulary"><div class="badges"><span class="bg bg-both">IG + AS</span></div>
+<div class="bar" style="background:var(--accent1)"></div>
+
+<h2>Vocabulary <span class="smaller accent1">词汇</span></h2>
+<table class="vtab">
+<tr><th>English</th><th>中文 (pīnyīn)</th><th>Meaning check</th></tr>
+<tr><td><strong>storage unit</strong></td><td>存储单位 (cún chǔ dān wèi)</td><td>a named quantity of data: byte, KiB, MiB…</td></tr>
+<tr class="fragment"><td><strong>kibibyte (KiB)</strong></td><td>二进制千字节 (èr jìn zhì qiān zì jié)</td><td>1024 bytes — one binary-prefix step</td></tr>
+<tr class="fragment"><td><strong>binary prefix</strong></td><td>二进制前缀 (èr jìn zhì qián zhuì)</td><td>ki-, me-, gi-, te- — every step ×1024</td></tr>
+<tr class="fragment"><td><strong>decimal prefix</strong></td><td>十进制前缀 (shí jìn zhì qián zhuì)</td><td>kilo-, mega-, giga-, tera- — every step ×1000</td></tr>
+<tr class="fragment"><td><strong>file size</strong></td><td>文件大小 (wén jiàn dà xiǎo)</td><td>how many bytes the file occupies</td></tr>
+<tr class="fragment"><td><strong>resolution</strong></td><td>分辨率 (fēn biàn lǜ)</td><td>how many pixels: width × height</td></tr>
+<tr class="fragment"><td><strong>colour depth</strong></td><td>色彩深度 (sè cǎi shēn dù)</td><td>bits per pixel — 24 bits gives 16. 7 million colours</td></tr>
+<tr class="fragment"><td><strong>sample rate</strong></td><td>采样率 (cǎi yàng lǜ)</td><td>measurements per second, in Hz</td></tr>
+<tr class="fragment"><td><strong>sample resolution</strong></td><td>采样位深 (cǎi yàng wèi shēn)</td><td>bits per measurement</td></tr>
+</table>
+</section><section class="dk" data-aud="ig" data-background-color="#151B3C" id="recap-ig"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>What survives the lesson</h2><div class="rule">8 bits per byte; 1024 per binary-prefix step. Continue through EiB.</div><div class="rule"><b>Count raw data first.</b> Pixels: width×height×depth. Sound: rate×depth×duration×channels.</div><div class="rule"><b>Label each unit.</b> Format, header and compression decide how payload relates to a real file.</div></section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="exit-ig"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>Before you leave</h2><div class="rule">A 256×128 image uses 8 bits per pixel. Find the raw size in KiB and explain what happens when the width doubles.</div><div class="rule">Explain why a raw-pixel estimate may differ from the size of the saved file.</div><div class="rule">How many TiB make 1 PiB?</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="exit-answer-ig"><div class="badges"><span class="bg bg-both">IGCSE 0478</span></div><div class="bar"></div><h2>Check your exit</h2><div class="rule">256×128×8÷8÷1024 =<b>32 KiB</b>. Doubling width doubles the payload to 64 KiB.</div><div class="rule">Headers/metadata may add bytes; compression may reduce stored data.</div><div class="rule">1024 TiB =1 PiB.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="dk" data-aud="al" data-background-color="#151B3C" id="recap-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>What survives the lesson</h2><div class="rule">8 bits per byte; 1024 per binary-prefix step. Decimal prefixes use 1000; distinguish them through tera.</div><div class="rule"><b>Count raw data first.</b> Pixels: width×height×depth. Sound: rate×depth×duration×channels.</div><div class="rule"><b>Label each unit.</b> Format, header and compression decide how payload relates to a real file.</div></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="exit-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>Before you leave</h2><div class="rule">A 256×128 image uses 8 bits per pixel. Find the raw size in KiB and explain what happens when the width doubles.</div><div class="rule">Explain why a raw-pixel estimate may differ from the size of the saved file.</div><div class="rule">Which is larger: 1 MB or 1 MiB? Explain.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="exit-answer-al"><div class="badges"><span class="bg bg-both">AS 9618</span></div><div class="bar"></div><h2>Check your exit</h2><div class="rule">256×128×8÷8÷1024 =<b>32 KiB</b>. Doubling width doubles the payload to 64 KiB.</div><div class="rule">Headers/metadata may add bytes; compression may reduce stored data.</div><div class="rule">1 MiB =1 048 576 B &gt;1 MB =1 000 000 B.</div><div class="lanes"><div><b>📝 IN THE EXAM</b><span>Use the named units and show valid working.</span></div><div><b>🏛 IN REALITY</b><span>Check what was counted before interpreting the number.</span></div></div></section><section class="dk" data-background-color="#151B3C" id="ledger"><div class="badges"><span class="bg bg-both">IG + AS</span></div><div class="bar"></div><h2>🧾 Outside the exam hall</h2><div class="rule"><b>Keep:</b> count what is stored, attach units, and distinguish a count of bytes from the label used to report it.</div><div class="rule"><b>Check:</b> raw payload, metadata, compression and available capacity answer different questions.</div><div class="rule"><b>Use tools:</b> a calculator or short program handles arithmetic; you still choose the assumptions.</div><div class="rule"><b>Next:</b> why do physical computers find two signal states so useful?</div></section></div></div>
+<button id="fs-btn" onclick="document.documentElement.requestFullscreen().catch(()=&gt;{})">⛶ Fullscreen</button>
+
+
+<div id="py-chip">🐍 waking Python…</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+
+
+<script>var AUD=new URLSearchParams(location.search).get('aud');if(!['ig','al'].includes(AUD))AUD=null;
+function setAud(a){const u=new URL(location.href);if(a)u.searchParams.set('aud',a);else u.searchParams.delete('aud');u.hash='/title';location.href=u.href;}
+(function(){
+ if(!AUD){document.querySelectorAll('.slides>section').forEach((s,i)=>{if(i)s.remove()});document.querySelectorAll('#objectives').forEach(s=>s.remove());document.querySelector('#obj-btn')?.remove();return;}
+ document.querySelectorAll('[data-aud]').forEach(el=>{if(el.getAttribute('data-aud')!==AUD)el.remove()});
+})();
+function audTitle(){let sub=document.getElementById('aud-sub'),btn=document.getElementById('aud-btns'),chip=document.getElementById('aud-chip');if(AUD&&sub){sub.textContent=AUD==='ig'?'Binary units · image and sound size':'Both prefix systems · file-size estimates';btn.style.display='none';chip.style.display='';chip.innerHTML='path: <b>'+(AUD==='ig'?'IGCSE 0478':'AS 9618')+'</b> · <a href="javascript:void(0)" onclick="setAud(null)">change</a>';}}
+</script><script>
+/* ===== Python runtime (Pyodide) — the audited house harness ===== */
+var pyPromise = null, pyBusy = false, currentOut = null, activeInput = null;
+
+function setRunButtons(enabled, label){
+  document.querySelectorAll('.pyrun').forEach(function(b){
+    b.disabled = !enabled;
+    b.textContent = enabled ? '▶ Run' : (label || '… running');
+  });
+}
+
+window.__pyInput = function(promptText){
+  return new Promise(function(resolve, reject){
+    var out = currentOut;
+    if(!out){ resolve(''); return; }
+    var row = document.createElement('span');
+    var lbl = document.createElement('span'); lbl.className='pyin-lbl'; lbl.textContent = promptText;
+    var inp = document.createElement('input'); inp.className='pyin';
+    inp.setAttribute('autocomplete','off'); inp.spellcheck = false;
+    row.appendChild(lbl); row.appendChild(inp); out.appendChild(row);
+    activeInput = {row: row, reject: reject};
+    setTimeout(function(){ inp.focus(); }, 60);
+    inp.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter'){
+        ev.stopPropagation();
+        var v = inp.value; row.remove(); activeInput = null; resolve(v);
+      }
+    });
+  });
+};
+
+function stopPy(){
+  if(activeInput){
+    var r = activeInput.reject;
+    activeInput.row.remove(); activeInput = null;
+    r(new Error('__pyStop__'));
+  }
+}
+
+function bootPython(){
+  if(pyPromise) return pyPromise;
+  pyPromise = new Promise(function(resolve,reject){
+    var timer=setTimeout(()=>reject(new Error('Python download timed out')),45000);
+    Promise.resolve().then(()=>loadPyodide()).then(resolve,reject).finally(()=>clearTimeout(timer));
+  }).then(function(py){
+    py.runPython(
+      "import builtins, js\n" +
+      "async def __ainput(prompt=''):\n" +
+      "    v = await js.window.__pyInput(str(prompt))\n" +
+      "    v = '' if v is None else str(v)\n" +
+      "    print(str(prompt) + v)\n" +
+      "    return v\n" +
+      "def _input_fallback(prompt=''):\n" +
+      "    v = js.window.prompt(str(prompt))\n" +
+      "    v = '' if v is None else str(v)\n" +
+      "    print(str(prompt) + v)\n" +
+      "    return v\n" +
+      "builtins.input = _input_fallback\n" +
+      "builtins.__ainput = __ainput\n");
+    var chip=document.getElementById('py-chip');
+    chip.textContent='🐍 Python ready'; chip.className='ready';
+    if(!pyBusy) setRunButtons(true);
+    return py;
+  }).catch(function(e){pyPromise=null;document.getElementById('py-chip').textContent='Python unavailable — Run to retry';setRunButtons(true);throw e;});
+  return pyPromise;
+}
+
+function runPy(code, outEl, doneCb){
+  if(pyBusy) return;
+  pyBusy = true; setRunButtons(false); currentOut = outEl;
+  outEl.style.display='block'; outEl.className='pyout'; outEl.textContent='';
+  var crashed=false, errLine='', sawOutput=false;
+  bootPython().then(function(py){
+    function emit(s){ sawOutput = true; outEl.appendChild(document.createTextNode(s + '\n')); }
+    py.setStdout({batched: emit});
+    py.setStderr({batched: emit});
+    var src = code.replace(/\binput\s*\(/g, 'await __ainput(');
+    var ns = py.toPy({});
+    return py.runPythonAsync(src, {globals: ns})
+      .catch(function(e){
+        crashed = true;
+        var lines = String(e.message||e).trim().split('\n').filter(function(l){ return l.trim(); });
+        errLine = lines[lines.length-1] || 'Error';
+        if(String(e.message||e).indexOf('__pyStop__') !== -1) errLine = '__stopped__';
+      })
+      .finally(function(){ ns.destroy(); });
+  }).then(function(){
+    if(activeInput){ activeInput.row.remove(); activeInput = null; }
+    if(!sawOutput && !crashed) outEl.textContent = '(no output)';
+    if(crashed){
+      var sp=document.createElement('span'); sp.className='crash';
+      sp.textContent = (errLine==='__stopped__') ? '⏹ stopped' : '💥 ' + errLine;
+      outEl.appendChild(sp);
+    }
+    pyBusy = false; setRunButtons(true); currentOut = null;
+    if(doneCb) doneCb(crashed, outEl.textContent, errLine);
+  }).catch(function(e){outEl.textContent='Python could not load. Check your connection, then Run to retry.';pyBusy=false;currentOut=null;setRunButtons(true);});
+}
+
+function initPyCells(){
+  document.querySelectorAll('.pycell').forEach(function(cell){
+    var srcEl=cell.querySelector('.pysrc');
+    var code=srcEl ? srcEl.textContent.replace(/^\n/,'').replace(/\s+$/,'') : '';
+    cell.innerHTML='';
+    var bar=document.createElement('div'); bar.className='pybar';
+    var dots=document.createElement('div'); dots.className='pydots';
+    ['#F0655B','#F2B53C','#17B3A3'].forEach(function(c){ var i=document.createElement('i'); i.style.background=c; dots.appendChild(i); });
+    bar.appendChild(dots);
+    var run=document.createElement('button'); run.className='pyrun'; run.textContent='⏳ waking…'; run.disabled=true;
+    bar.appendChild(run);
+    var stp=document.createElement('button'); stp.className='pylock'; stp.textContent='⏹';
+    stp.title='stop a program waiting for input'; stp.style.padding='3px 9px';
+    stp.addEventListener('click', stopPy);
+    bar.appendChild(stp);
+    var st=document.createElement('span'); st.className='pystate'; st.textContent='editable';
+    bar.appendChild(st);
+    var ta=document.createElement('textarea'); ta.className='pyta';
+    ta.value=code; ta.rows=Math.max(2, code.split('\n').length); ta.spellcheck=false;
+    var out=document.createElement('pre'); out.className='pyout'; out.style.display='none';
+    cell.appendChild(bar); cell.appendChild(ta); cell.appendChild(out);
+    run.addEventListener('click',function(){ runPy(ta.value, out); });
+  });
+  bootPython().catch(()=>{});
+}
+
+function autoSizePyTextareas(scope){
+  (scope||document).querySelectorAll('.pyta').forEach(function(ta){
+    ta.style.height='auto';
+    ta.style.height=(ta.scrollHeight+4)+'px';
+  });
+}
+
+</script><script>function initBitDepth(){
+  var cv=document.getElementById('bd-cv'); if(!cv) return;
+  var ctx=cv.getContext('2d');
+  var W=1000, H=176, HALF=88;
+  cv.width=W; cv.height=H;
+  var bits=3, hard=false;
+  var SUN=[[24,36,84],[250,158,92]];       // a full sunset — the whole range
+  var SKY=[[50,70,120],[56,77,128]];       // a shallow dawn — only ~8 8-bit values wide, so 8 bits visibly fails
+  var rangeEl=document.getElementById('bd-range'), readEl=document.getElementById('bd-read'),
+      hardEl=document.getElementById('bd-hard'), capEl=document.getElementById('bd-cap'),
+      ltEl=document.getElementById('bd-lt'), lbEl=document.getElementById('bd-lb');
+
+  function q(v, levels){ var s=levels-1; return Math.round(v/255*s)/s*255; }
+  function draw(){
+    var st = hard ? SKY : SUN;
+    var img = ctx.createImageData(W,H), d = img.data;
+    var lv = Math.pow(2,bits);
+    for(var x=0; x<W; x++){
+      var t = x/(W-1);
+      var c = [ st[0][0]+(st[1][0]-st[0][0])*t,
+                st[0][1]+(st[1][1]-st[0][1])*t,
+                st[0][2]+(st[1][2]-st[0][2])*t ];
+      /* top strip */
+      var top=[0,0,0];
+      for(var k=0;k<3;k++){
+        top[k] = hard
+          ? Math.round(q(c[k],1024) + (Math.random()-0.5))   /* 10 bits, dithered onto an 8-bit screen */
+          : Math.round(c[k]);                                 /* a true 8 bits */
+      }
+      /* bottom strip */
+      var bot=[Math.round(q(c[0],lv)), Math.round(q(c[1],lv)), Math.round(q(c[2],lv))];
+      for(var y=0; y<H; y++){
+        var i=(y*W+x)*4, p = (y<HALF) ? top : bot;
+        d[i]=p[0]; d[i+1]=p[1]; d[i+2]=p[2]; d[i+3]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+    ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillRect(0,HALF-1,W,2);
+
+    ltEl.style.top='9px';  ltEl.style.transform='none';
+    lbEl.style.top='51%';
+    ltEl.textContent=hard?'Fine quantisation + dither illustration':'8-bit reference';
+    lbEl.textContent=bits+' bits per channel';
+    readEl.textContent='2^'+bits+' = '+lv+' levels per channel · '+(lv**3).toLocaleString('en-US')+' RGB combinations';
+    capEl.textContent=hard?'A narrow gradient makes rounding steps easier to see. The reference uses a finer calculation plus noise before this canvas stores eight-bit channel values. This illustrates dithering; it does not turn the screen into a 10-bit display.':'Predict which changes when you add one bit: the number of levels, the width of each band, or both? Compare on this display; visibility depends on the image and viewing conditions.';
+  }
+
+  rangeEl.addEventListener('input', function(){ bits=parseInt(this.value,10); draw(); });
+  hardEl.addEventListener('click', function(){
+    hard=!hard;
+    this.classList.toggle('on', hard);
+    this.textContent = hard ? '◂ back to the sunset' : 'try the hard case ▸';
+    if(hard){ bits=8; rangeEl.value=8; }
+    draw();
+  });
+  draw();
+}
+
+</script><script>function initWeighIn(){
+ const host=document.getElementById('weigh');let i=0,answer=null;
+ const rounds=[['1 kB',1000,'1 KiB',1024],['1 byte',1,'9 bits',1.125],['2 nibbles',1,'1 byte',1],['1000 KiB',1024000,'1 MiB',1048576],['3100 kB',3100000,'3 MiB',3145728],['3100 KiB',3174400,'3 MiB',3145728],['1536 KiB',1572864,'1 MiB',1048576]];
+ function draw(){let final=i===7,boss=i===6&&AUD==='al';host.innerHTML='<div class="weigh-round">'+(final?'The byte count survives':'Round '+(i+1)+' / 7')+'</div>'+(final?'<h3>256 000 000 000 bytes</h3><p>= 256 GB ≈ 238.42 GiB</p><p>Different units. The same number of bytes.</p>':boss?'<p>Which is largest?</p><div class="weigh-controls choices">'+['3300 KiB','0.3 MB','3 MiB','3300 kB'].map((t,j)=>'<button data-answer="'+j+'">'+t+'</button>').join('')+'</div>':'<div class="weigh-pair"><b>'+rounds[i][0]+'</b><b>'+rounds[i][2]+'</b></div><div class="weigh-controls choices"><button data-answer="L">Left is larger</button><button data-answer="E">Equal</button><button data-answer="R">Right is larger</button></div>')+'<div class="weigh-feedback" aria-live="polite"></div><div class="weigh-controls"><button id="weigh-back" '+(i===0?'disabled':'')+'>← Back</button><button id="weigh-new">Start again</button><button id="weigh-next" '+(final?'disabled':'')+'>Next →</button></div>';
+ host.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{answer=b.dataset.answer;let correct=boss?'0':rounds[i][1]===rounds[i][3]?'E':rounds[i][1]>rounds[i][3]?'L':'R';host.querySelector('.weigh-feedback').textContent=(answer===correct?'✓ Correct. ':'Try the comparison again. ')+(boss?'Byte counts: 3 379 200; 300 000; 3 145 728; 3 300 000.':rounds[i][1].toLocaleString('en-US')+' bytes versus '+rounds[i][3].toLocaleString('en-US')+' bytes.');});
+ host.querySelector('#weigh-back').onclick=()=>{i--;answer=null;draw()};host.querySelector('#weigh-next').onclick=()=>{i++;answer=null;draw()};host.querySelector('#weigh-new').onclick=()=>{i=0;answer=null;draw()};
+ }draw();
+}
+</script><script>function initMarkers(){
+ const host=document.getElementById('mark-'+AUD);host.className='marker';
+ if(AUD==='ig'){
+ host.innerHTML='<div class="ig-grid">'+[['sound','Sound answer (KiB)'],['image','Image answer (bytes)']].map(([id,label])=>'<div><label>'+label+'<input id="'+id+'-answer" type="text" autocomplete="off"></label><label>Your working<textarea id="'+id+'-work" aria-label="'+id+' working"></textarea></label><div id="'+id+'-rubric" class="rubric" hidden></div></div>').join('')+'</div><div class="mark-controls"><button id="mark">Check answers / show rubric</button><button id="reset">Reset</button></div><div class="mark-score" aria-live="polite"></div><p class="human-note">Values are checked locally. Working marks require your or your teacher’s judgement.</p>';
+ let checked=false,valueMarks=0;
+ const sound=['22016 × 8, then ÷8 (equivalent bit-to-byte step).','22016 × 10 (samples across the duration).','220160 ÷1024 (bytes into KiB).'];
+ function score(){let sn=Math.min(2,host.querySelectorAll('#sound-rubric input:checked').length),im=host.querySelectorAll('#image-rubric input:checked').length;host.querySelector('.mark-score').textContent='Values: '+valueMarks+'/2 · human working: '+(sn+im)+'/3 · total '+(valueMarks+sn+im)+'/5';}
+ function clear(){checked=false;host.querySelectorAll('.rubric').forEach(n=>{n.hidden=true;n.innerHTML=''});host.querySelector('.mark-score').textContent='';host.querySelectorAll('input[type=text]').forEach(n=>n.className='');}
+ host.querySelector('#mark').onclick=()=>{checked=true;valueMarks=0;[['sound',/^215(?:\.0+)?\s*(?:KiB)?$/i],['image',/^(?:2000000|2[ ,]000[ ,]000)(?:\.0+)?\s*(?:bytes?|B)?$/i]].forEach(([id,re])=>{let n=host.querySelector('#'+id+'-answer'),ok=re.test(n.value.trim());valueMarks+=+ok;n.className=ok?'ok':'bad'});
+ host.querySelector('#sound-rubric').innerHTML='<b>Model: 215 KiB.</b> Award any two valid stages shown:<br>'+sound.map(t=>'<label><input type="checkbox" '+(!host.querySelector('#sound-work').value.trim()?'disabled':'')+'>'+t+'</label>').join('');
+ host.querySelector('#image-rubric').innerHTML='<b>Model: 2 000 000 bytes.</b><label><input type="checkbox" '+(!host.querySelector('#image-work').value.trim()?'disabled':'')+'>1000 ×1000, or 1 000 000 ×2. [1]</label><p>Credit correct stages only. Check the units and the whole argument; isolated numbers are not working.</p>';
+ host.querySelectorAll('.rubric').forEach(n=>n.hidden=false);host.querySelectorAll('input[type=checkbox]').forEach(n=>n.onchange=score);score();};
+ host.querySelectorAll('input[type=text],textarea').forEach(n=>n.oninput=clear);
+ host.querySelector('#reset').onclick=()=>{host.querySelectorAll('input[type=text],textarea').forEach(n=>n.value='');clear()};
+ }else{
+ let pick=null;host.innerHTML='<div class="mark-options">'+['3300 KiB','0.3 MB','3 MiB','3300 kB'].map((t,i)=>'<button data-pick="'+i+'">'+t+'</button>').join('')+'</div><div class="mark-fields">'+['Kibi uses a ___ prefix','3 KiB = ___ bytes','Megabyte uses a ___ prefix','2 TB = ___ GB'].map((t,i)=>'<label>'+t+'<input id="prefix-'+i+'" type="text" autocomplete="off"></label>').join('')+'</div><div class="mark-controls"><button id="mark">Check</button><button id="reset">Reset</button></div><div class="mark-score" aria-live="polite"></div><div class="mark-feedback"></div>';
+ function clear(){host.querySelector('.mark-score').textContent='';host.querySelector('.mark-feedback').innerHTML='';host.querySelectorAll('input').forEach(n=>n.className='')}
+ host.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{pick=+b.dataset.pick;host.querySelectorAll('[data-pick]').forEach(n=>n.classList.toggle('chosen',n===b));clear()});
+ host.querySelectorAll('input').forEach(n=>n.oninput=clear);
+ host.querySelector('#mark').onclick=()=>{let score=+(pick===0);[/^binary$/i,/^(3072|3[ ,]072)$/,/^(decimal|denary)$/i,/^(2000|2[ ,]000)$/].forEach((re,i)=>{let n=host.querySelector('#prefix-'+i),ok=re.test(n.value.trim());score+=+ok;n.className=ok?'ok':'bad'});host.querySelector('.mark-score').textContent=score+'/5';host.querySelector('.mark-feedback').innerHTML='<div><b>Largest: 3300 KiB</b><br>Byte counts: 3 379 200; 300 000; 3 145 728; 3 300 000.</div><div><b>binary · 3072 · decimal/denary · 2000</b><br>Named units choose the multiplier.</div>'};
+ host.querySelector('#reset').onclick=()=>{pick=null;host.querySelectorAll('[data-pick]').forEach(n=>n.classList.remove('chosen'));host.querySelectorAll('input').forEach(n=>n.value='');clear()};
+ }
+}
+</script><script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:.04,center:true,controlsTutorial:false,transition:matchMedia('(prefers-reduced-motion:reduce)').matches?'none':'fade',backgroundTransition:'none',plugins:[RevealNotes]}).then(()=>{audTitle();if(AUD){initPyCells();initBitDepth();initWeighIn();initMarkers();autoSizePyTextareas(Reveal.getCurrentSlide());}else document.getElementById('py-chip').remove();});
+Reveal.on('slidechanged',e=>autoSizePyTextareas(e.currentSlide));
+</script><script type="application/json" id="course-routes">{"ig": {"slides": 25, "cells": 2}, "al": {"slides": 26, "cells": 2}}</script><script type="application/json" id="paper-spend">[["0478", "N24", "12", "2"], ["0478", "M23", "12", "4"], ["9618", "J24", "12", "7"], ["9618", "J24", "13", "1"]]</script></body>
+</html>

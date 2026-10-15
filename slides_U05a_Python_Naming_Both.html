@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Naming the Magic — Python I</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css" rel="stylesheet"/>
+<style>
+:root{
+  --dark:#151B3C; --light:#F4F6FB; --accent1:#17B3A3; --accent2:#F0655B;
+  --accent3:#F2B53C; --navy:#222B5A; --ice:#E8EEF9; --white:#fff;
+}
+.reveal{font-family:'Calibri','Segoe UI','PingFang SC','Microsoft YaHei',system-ui,sans-serif; font-size:26px;}
+.reveal h1,.reveal h2,.reveal h3{font-family:'Georgia','Times New Roman','PingFang SC','Microsoft YaHei',serif; text-transform:none; letter-spacing:-.02em;}
+.reveal section{text-align:left;}
+.dk{color:var(--ice);} .dk h1,.dk h2,.dk h3{color:var(--white);}
+.lt{color:var(--navy);} .lt h2,.lt h3{color:var(--navy);}
+.bar{position:absolute; top:0; left:0; right:0; height:5px;}
+.card{background:var(--white); border-radius:10px; padding:16px 20px; box-shadow:0 4px 12px rgba(0,0,0,.07); text-align:left;}
+.rule{background:var(--white); border-radius:8px; padding:11px 16px; box-shadow:0 3px 10px rgba(0,0,0,.05); border-left:5px solid var(--accent1); margin:10px 0; text-align:left; font-size:.74em;}
+.rule.accent2{border-left-color:var(--accent2);} .rule.accent3{border-left-color:var(--accent3);} .rule.navy{border-left-color:var(--navy);}
+.dk .rule{background:rgba(255,255,255,.06); color:var(--ice);}
+.two-col{display:flex; gap:28px; align-items:flex-start;} .two-col>*{flex:1;}
+.three-col{display:flex; gap:18px;} .three-col>*{flex:1;}
+.sgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; font-size:.6em;}
+.scard{background:rgba(255,255,255,.08); border-radius:10px; padding:14px; text-align:left; border-top:3px solid var(--accent1);}
+.smaller{font-size:.7em;}
+.center{text-align:center;}
+.accent1{color:var(--accent1);} .accent2{color:var(--accent2);} .accent3{color:var(--accent3);}
+.mono{font-family:'Courier New',monospace; font-weight:bold;}
+
+.badges{position:absolute; top:-14px; right:0; display:flex; gap:6px; z-index:5;}
+.bg{font-size:.44em; font-weight:bold; letter-spacing:.03em; padding:3px 12px; border-radius:20px; font-family:'Calibri','Segoe UI',sans-serif;}
+.bg-both{background:rgba(23,179,163,.15); color:var(--accent1); border:1.5px solid var(--accent1);}
+.bg-hole{background:rgba(242,181,60,.15); color:#B8860B; border:1.5px solid var(--accent3);}
+.dk .bg-both{background:rgba(23,179,163,.22); color:#5FD6C9;}
+.dk .bg-hole{color:var(--accent3);}
+
+.dig{position:absolute; bottom:-34px; left:50%; transform:translateX(-50%); font-size:.5em; color:#98a0c0; animation:bob 2s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(5px);}}
+
+#obj-btn{background:rgba(255,255,255,.08); color:var(--ice); border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:5px 14px; cursor:pointer; font-size:.42em; opacity:.55; transition:opacity .2s;}
+#obj-btn:hover{opacity:1;}
+
+/* ===== py-cell: live Python on the slide ===== */
+.pycell{background:var(--navy); border-radius:12px; padding:10px 12px 12px; box-shadow:0 4px 14px rgba(0,0,0,.14); text-align:left;}
+.pycell .pybar{display:flex; gap:8px; align-items:center; margin-bottom:6px;}
+.pycell .pydots{display:flex; gap:5px;}
+.pycell .pydots i{width:9px; height:9px; border-radius:50%; display:block;}
+.pyta{width:100%; box-sizing:border-box; background:#1b234d; color:var(--ice); border:none; border-radius:8px;
+  font-family:'Courier New',monospace; font-weight:bold; font-size:.62em; line-height:1.5; padding:10px 12px; resize:none; outline:none; display:block;}
+.pyta[readonly]{color:#aeb8dd;}
+.pyta:focus{box-shadow:0 0 0 2px var(--accent1);}
+.pyrun{background:var(--accent1); color:#fff; border:none; border-radius:7px; padding:4px 16px; font-size:.5em; font-weight:bold; cursor:pointer; font-family:'Calibri','Segoe UI',sans-serif;}
+.pyrun:hover{background:#12907f;}
+.pyrun:disabled{background:#5a6394; cursor:wait;}
+.pylock{background:transparent; color:#98a0c0; border:1.5px solid #454e82; border-radius:7px; padding:3px 12px; font-size:.5em; font-weight:bold; cursor:pointer;}
+.pylock:hover{color:var(--accent3); border-color:var(--accent3);}
+.pyout{background:#0d1230; color:#5FD6C9; border-radius:8px; font-family:'Courier New',monospace; font-weight:bold;
+  font-size:.58em; line-height:1.5; padding:9px 12px; margin:8px 0 0; min-height:1.4em; white-space:pre-wrap; text-align:left;}
+.pyout.err{color:var(--accent2);}
+.pyout .crash{color:var(--accent2);}
+.pyin-lbl{color:#5FD6C9;}
+.pyin{background:#1b234d; border:2px solid var(--accent1); border-radius:6px; color:var(--ice);
+  font-family:'Courier New',monospace; font-weight:bold; font-size:1em; padding:1px 8px; width:130px; outline:none; vertical-align:middle; margin-left:2px;}
+.pyin:focus{box-shadow:0 0 6px rgba(23,179,163,.55);}
+.pystate{font-size:.46em; color:#98a0c0; margin-left:auto;}
+
+/* karel figure */
+.circ{position:relative; margin:0 auto;}
+.circ svg{width:100%; display:block;}
+.clbl{position:absolute; font-family:'Calibri','Segoe UI',sans-serif; font-size:.5em; color:#7a83a8; transform:translate(-50%,-50%);}
+
+/* type train */
+.train{display:flex; gap:4px; align-items:center; justify-content:center;}
+.carriage{width:54px; height:54px; border-radius:9px; background:var(--white); border:2.5px solid var(--accent1);
+  display:flex; align-items:center; justify-content:center; font-family:'Courier New',monospace; font-weight:bold; font-size:.7em; color:var(--navy);}
+.carriage.solo{border-color:var(--accent3); background:rgba(242,181,60,.1);}
+
+/* game grammar */
+.mg-stage{font-size:.72em; font-weight:bold; color:var(--navy); background:rgba(242,181,60,.18); border:2px solid var(--accent3); border-radius:24px; padding:4px 26px; text-align:center;}
+.mg-prog{display:flex; gap:7px; justify-content:center;}
+.mg-prog .pd{width:11px; height:11px; border-radius:50%; background:#d4d9ea; transition:all .2s;}
+.mg-prog .pd.done{background:var(--accent1);}
+.mg-prog .pd.cur{background:var(--accent3); transform:scale(1.3);}
+.mg-gbtn{background:var(--white); border:2px solid #c6cde4; border-radius:10px; padding:8px 16px; font-size:.6em; font-weight:bold; color:var(--navy); cursor:pointer; font-family:'Courier New',monospace; text-align:left;}
+.mg-gbtn:hover{border-color:var(--accent1);}
+.mg-gbtn.no{animation:shake .4s; border-color:var(--accent2);}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+.mg-status{font-size:.6em; font-weight:bold; min-height:1.6em; text-align:center;}
+.mg-status.ok{color:var(--accent1);}
+.mg-status.bad{color:var(--accent2);}
+.mg-btn{background:var(--navy); color:var(--white); border:none; border-radius:8px; padding:6px 18px; font-size:.62em; font-weight:bold; cursor:pointer;}
+.mg-btn:hover{background:var(--accent1);}
+.pp-code{background:var(--navy); color:var(--ice); border-radius:10px; font-family:'Courier New',monospace; font-weight:bold; font-size:.6em; line-height:1.55; padding:12px 16px; text-align:left; white-space:pre;}
+.pp-line{display:block; border-radius:6px; padding:1px 8px; margin:1px 0; cursor:default;}
+.pp-line.clickable{cursor:pointer;}
+.pp-line.clickable:hover{background:rgba(242,181,60,.18);}
+.pp-line.picked{background:rgba(23,179,163,.25);}
+.pp-line.wrong{animation:shake .4s; background:rgba(240,101,91,.25);}
+.pp-tada{font-size:1.05em; font-weight:bold; color:var(--accent3); text-align:center; animation:pop .5s ease-out;}
+@keyframes pop{0%{transform:scale(.3); opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1); opacity:1;}}
+
+.pbtn{background:var(--navy); color:var(--white); border:none; border-radius:10px; padding:16px 38px; font-size:.8em; font-weight:bold; cursor:pointer;}
+.pbtn:hover{background:var(--accent1);}
+.src{font-size:.5em; color:#98a0c0; margin-top:12px;}
+
+.vtab{width:100%; border-collapse:collapse; font-size:.62em;}
+.vtab th{background:var(--navy); color:var(--white); padding:7px 12px; text-align:left;}
+.vtab td{background:var(--white); padding:6px 12px; border-bottom:1px solid #e3e7f2;}
+.xt{font-size:.6em; width:100%; border-collapse:collapse;}
+.xt td,.xt th{padding:6px 10px; border-bottom:1px solid #e3e7f2; background:var(--white); vertical-align:top;}
+.xt th{background:var(--navy); color:var(--white);}
+
+#fs-btn{position:fixed; bottom:18px; right:18px; z-index:99; background:rgba(30,39,97,.7); color:var(--ice); border:none; border-radius:8px; padding:6px 16px; cursor:pointer; font-size:18px; opacity:.7; transition:opacity .2s;}
+#fs-btn:hover{opacity:1;}
+:fullscreen #fs-btn,:-webkit-full-screen #fs-btn{display:none;}
+#py-chip{position:fixed; bottom:18px; left:18px; z-index:99; font-size:15px; font-weight:bold; padding:6px 14px; border-radius:20px; background:rgba(30,39,97,.75); color:#98a0c0;}
+#py-chip.ready{color:#5FD6C9;}
+
+</style>
+<style>.reveal{font-size:26px}.reveal .slides section:not(.stack){box-sizing:border-box;top:28px!important;padding:22px 18px 10px;line-height:1.28}.reveal h2{font-size:38px;margin:10px 0 18px}.reveal h1{font-size:64px;margin:32px 0 20px}.reveal p{font-size:23px;margin:12px 0}.rule{font-size:22px;line-height:1.35;margin:10px 0;padding:12px 16px}.two-col{gap:24px}.two-col>*{min-width:0}.dk .card{background:#252e55;color:var(--ice)}.bar{background:var(--accent1)}.badges{top:0;right:18px}.bg{font-size:12px;color:#278478;border:1px solid #17b3a3;background:#e1f5f0}.dk .bg{color:#5fd6c9;background:#253e52}.lanes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;font-size:16px;line-height:1.3}.lanes>div{border-top:2px solid var(--accent3);padding:8px 12px;background:#eceff7;border-radius:5px}.lanes b{display:block;font-size:12px;letter-spacing:.06em;margin-bottom:4px}.dk .lanes>div{background:#252e55}.dk .lanes{color:var(--ice)}.return-link,.dig-link{display:inline-block;font-size:18px;color:#596b95;margin-top:10px}.dk a{color:#7be2d8}button,.reveal button{font-family:inherit;font-size:18px;border:1px solid #b9c6dd;border-radius:8px;background:#fff;color:var(--navy);padding:7px 13px;cursor:pointer}button:hover{border-color:var(--accent1)}button:disabled{opacity:.5;cursor:default}button:focus-visible,a:focus-visible{outline:3px solid var(--accent3);outline-offset:3px}#obj-btn{font-size:20px;opacity:1;display:inline-block;margin-top:25px}#aud-chip,#aud-sub{font-size:18px}#fs-btn{font-size:14px;bottom:7px;right:70px}#py-chip{font-size:13px;bottom:7px;left:15px}.pycell{padding:12px}.pyta{font-size:19px;line-height:1.42;white-space:pre;overflow:auto;resize:none;height:215px;padding:12px;font-weight:normal;tab-size:4}.pyout{font-size:18px;line-height:1.4;height:132px;max-height:132px;overflow:auto;margin:8px 0 0;box-sizing:border-box;white-space:pre-wrap;overflow-wrap:anywhere}.pybar{flex-wrap:wrap}.pybar button{font-size:14px;padding:5px 9px;background:#303e70;color:#e8eef9}.pybar .pyrun{background:#138579;color:white}.pystate{font-size:12px}.pyrow{display:grid;grid-template-columns:1.1fr 1fr;gap:12px}.pyrow .pyta,.pyrow .pyout{height:320px;max-height:320px;margin:0}.pyrow .pyta{font-size:18px}.pyin{max-width:110px;font-size:17px}.xt,.vtab{font-size:21px;line-height:1.25}.xt th,.xt td,.vtab th,.vtab td{padding:9px 12px}.code{background:#222b5a;color:#e8eef9;font:21px/1.45 'Courier New',monospace;padding:18px;border-radius:10px;white-space:pre-wrap}.code .accent3{color:#ffd064}.symbols{display:flex;gap:14px;margin-top:16px}.symbols>div{flex:1;text-align:center;background:white;border-bottom:4px solid #17b3a3;border-radius:10px;padding:15px;font-size:18px}.symbols b{font:40px Georgia;display:block}.steps{display:flex;gap:8px;align-items:stretch;margin:25px 0}.steps>div{flex:1;background:white;border-top:4px solid var(--accent1);padding:18px 10px;border-radius:10px;font-size:22px;text-align:center}.steps>span{align-self:center}.note{font-size:18px!important;color:#697698}.game-nav{display:flex;gap:8px;align-items:center;margin-bottom:14px}.game-nav span{margin-left:auto;font-size:18px}.game-main{display:grid;grid-template-columns:1fr 1fr;gap:20px;min-height:225px}.game-main .code{font-size:21px;min-height:140px;margin:0}.game-main h3{font-family:inherit;font-size:23px;margin:0 0 12px}.options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.options button.selected{border:3px solid #e4a42a;background:#fff4d1}.game-feedback{min-height:28px;font-size:20px;margin:10px 0}.game-main .pyout{height:105px;max-height:105px}.linepick{display:block;width:100%;text-align:left;background:#222b5a;color:#e8eef9;font:19px/1.3 monospace;padding:7px;margin:3px 0}.linepick.selected{border:2px solid var(--accent3);color:#ffdb88}.exact label{display:block;font-size:19px;margin:8px 0}.exact input{box-sizing:border-box;width:100%;font:20px monospace;padding:7px;border:2px solid #c6cde4;border-radius:7px}.exact .feedback{font-size:20px;min-height:28px;margin-top:10px}.exact .solution{font-size:18px;background:#e4f5ef;padding:10px;white-space:pre-wrap;border-radius:7px}.train{justify-content:start;margin:14px}.carriage{font-size:24px}.reveal .slides section .fragment{transition:opacity .18s ease!important}.reveal .slides section{transition-duration:.22s!important}.reveal pre{box-shadow:none;max-width:100%;width:auto}.reveal .slides section[data-hole] .bar{background:var(--accent3)}.reveal [hidden]{display:none!important}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}@media print{#fs-btn,#py-chip{display:none}}
+.pyta{height:185px}.pyrow .pyta,.pyrow .pyout{height:260px;max-height:260px}.exact[data-check="ig"]{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}.exact[data-check="ig"] label{margin:0}.exact[data-check="ig"] .feedback,.exact[data-check="ig"] .solution{grid-column:1/-1}.exact[data-check="ig"] .solution{font-size:17px}.reveal .linepick{background:#222b5a;color:#e8eef9;font:19px/1.3 monospace;text-align:left;padding:7px}.reveal .linepick.selected{border:2px solid var(--accent3);color:#ffdb88;background:#303758}.pyta[readonly]{color:#d2d8f0}
+#title h2{font-size:64px;margin:36px 0 24px}#title>p:first-of-type{font-size:18px;letter-spacing:.12em}
+
+/* U-lane visual sweep, 20 September 2026: brief entrance motion; no extra clicks. */
+.reveal .slides section{transition-duration:220ms!important}
+.reveal .backgrounds .slide-background{transition-duration:220ms!important}
+.reveal .slides section.lt .card,.reveal .slides section.lt .rule{box-shadow:0 2px 8px rgba(34,43,90,.065)}
+.reveal .slides section.dk .card,.reveal .slides section.dk .rule{box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.reveal .slides section .pycell{box-shadow:0 5px 16px rgba(21,27,60,.12)}
+.reveal .slides section .dig-link,.reveal .slides section .return-link{text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(23,179,163,.45)}
+.reveal .slides section button{transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease}
+.reveal .slides section button:focus-visible{outline:3px solid #f2b53c;outline-offset:3px}
+@keyframes u-enter{from{opacity:.15;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes u-rule{from{transform:scaleX(.94);opacity:.3}to{transform:scaleX(1);opacity:1}}
+@media(prefers-reduced-motion:no-preference){
+ .reveal:not(.none) .slides section.present:not(.stack)>:is(h1,h2){animation:u-enter .22s ease-out both}
+ .reveal:not(.none) .slides section.present:not(.stack)>:is(.rule,.card,.two-col,.three-col,.pycell,.xt,.vtab):not(.fragment){animation:u-enter .24s ease-out both;animation-delay:35ms}
+ .reveal:not(.none) .slides section.present:not(.stack)>.bar{transform-origin:left;animation:u-rule .24s ease-out both}
+}
+.reveal.none .slides section,.reveal.none .slides section *{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.reveal .slides section,.reveal .slides section *{animation:none!important;transition:none!important}}
+@media print{.reveal .slides section,.reveal .slides section *{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<div class="reveal"><div class="slides"><section><section class="dk" data-background-color="#151B3C" id="title"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Naming the Magic</h2><p class="accent3">COMPUTER SCIENCE · U05a · PYTHON I</p><p>You already gave the robot orders.<br/>Now give its values names.</p><div id="aud-btns"><button onclick="setAud('ig')">IGCSE 0478 ▶</button> <button onclick="setAud('al')">AS 9618 ▶</button></div><p id="aud-sub"></p><p hidden="" id="aud-chip"></p><a href="#/objectives" id="obj-btn">🎯 Today’s objectives ↓</a>
+</section><section class="dk" data-background-color="#151B3C" id="objectives"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>🎯 Today you will be able to</h2><div class="rule">Read an assignment as a change of state; distinguish it from an equality test.</div><div class="rule">Choose types for values, and distinguish variables from constants.</div><div class="rule">Take input, convert it when needed and produce clear output.</div><div class="rule">Plan a short sequence; predict, run, investigate and modify it.</div><div class="rule" data-aud="ig">IG: use Python names, values, input and output.</div><div class="rule" data-aud="al">AS: practise Python; explore valid calendar values with datetime.date.</div>
+</section></section><section class="lt" data-background-color="#F4F6FB" id="first-order"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>The first order</h2><div class="two-col"><div><div class="rule">Predict all three output lines before you press Run.</div><div class="rule">Then investigate: change the calculation and the message. The machine follows the new instructions.</div><div class="rule"><b>hex(214)</b> pays last unit’s debt: a conversion you can now command.</div></div><div><div class="pycell" id="cell-first"><script class="pysrc" type="text/plain">print(2 + 2)
+print(hex(214))
+print("Hello, Chengdu!")</script></div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>Predict exact output: content and order matter.</div><div><b>🏛 IN REALITY</b>This is real Python running in your browser. The first load needs the runtime download.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="karel"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Exhibit A: your own homework</h2><div class="two-col"><div><pre class="code">def main():
+    while no_beepers_present():
+        if front_is_clear():
+            move()
+        else:
+            jump_hurdle()</pre><div class="circ" style="width:420px; margin-top:4px;">
+<svg viewbox="0 0 340 60">
+<g stroke="#c6cde4" stroke-width="1">
+<line x1="20" x2="20" y1="10" y2="50"></line><line x1="60" x2="60" y1="10" y2="50"></line>
+<line x1="100" x2="100" y1="10" y2="50"></line><line x1="140" x2="140" y1="10" y2="50"></line>
+<line x1="180" x2="180" y1="10" y2="50"></line><line x1="220" x2="220" y1="10" y2="50"></line>
+<line x1="260" x2="260" y1="10" y2="50"></line><line x1="300" x2="300" y1="10" y2="50"></line>
+<line x1="20" x2="320" y1="50" y2="50"></line><line x1="20" x2="320" y1="10" y2="10"></line>
+<line x1="320" x2="320" y1="10" y2="50"></line>
+</g>
+<g stroke="#222B5A" stroke-width="4">
+<line x1="100" x2="100" y1="22" y2="50"></line>
+<line x1="180" x2="180" y1="22" y2="50"></line>
+<line x1="260" x2="260" y1="22" y2="50"></line>
+</g>
+<path d="M28 22 L52 30 L28 38 Z" fill="#17B3A3"></path>
+<path d="M310 24 L316 30 L310 36 L304 30 Z" fill="#F2B53C"></path>
+</svg>
+<span class="clbl" style="left:11%; top:-12%;">you</span>
+<span class="clbl" style="left:91%; top:-12%;">finish</span>
+<span class="clbl" style="left:53%; top:118%;">the hurdles (walls after squares 2, 4, 6)</span>
+</div></div><div><div class="rule">This is the shape of your Karel code: do, decide, repeat.</div><div class="rule">Karel already had data: its position, walls and beepers form the world’s state.</div><div class="rule">Today you choose the <b>names and values</b> your own program remembers.</div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>Sequence, selection and iteration describe control flow. Today’s focus is sequence and data.</div><div><b>🏛 IN REALITY</b>This excerpt needs the Karel library and a defined jump_hurdle routine; it is not a standalone Python program.</div></div>
+</section><section><section class="lt" data-background-color="#F4F6FB" id="tile"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>The Tile has a name</h2><div class="two-col"><div><div class="rule">HRM’s tile stores a value for later. A <b>variable</b> gives a changing value a name.</div><div class="rule">Read forward: start at 5 → add 1 → add 1. Predict the final state.</div><div class="rule">Assignment: evaluate the right-hand expression, then assign its value to the name on the left.</div></div><div><div class="pycell" id="cell-tile"><script class="pysrc" type="text/plain">x = 5
+x = x + 1
+x = x + 1
+print(x)</script></div></div></div><a class="dig-link" href="#/equals-hole">↓ What if this were an equation?</a><div class="lanes"><div><b>📝 IN THE EXAM</b>A variable’s value may change while the program runs.</div><div><b>🏛 IN REALITY</b>The box is a useful state model. Python binds names to objects; it does not allocate a fixed one-byte box for every name.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" data-hole="true" id="equals-hole"><div class="badges"><span class="bg">OPTIONAL INVESTIGATION</span></div><div class="bar"></div><h2>↓ What if “=” meant an equation?</h2><pre class="code">x = 5
+x = x + 1</pre><div class="rule">An equation x = x + 1 has no solution. So how did Python just run it?</div><div class="rule">First state: x refers to 5. Compute 5 + 1. Next state: x refers to 6. The two occurrences do different jobs.</div><div class="rule">Predict what a second assignment does. Return to the cell, change it and test your prediction.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Read Python = as assignment and == as an equality test.</div><div><b>🏛 IN REALITY</b>An assignment changes state. A mathematical equation states a relationship; Python’s == tests equality.</div></div><a class="return-link" href="#/tile">↑ Return to the main idea</a>
+</section></section><section class="lt" data-background-color="#F4F6FB" id="three-faces"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Two jobs. Two symbols.</h2><div class="symbols"><div><b>=</b>Assign a value<br/>score = score + 1</div><div><b>==</b>Test equality<br/>score == 7</div></div><div class="rule">Start with score = 6. The assignment changes score to 7.</div><div class="rule">The test now produces True. Testing does not change score.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>When asked to trace Python, follow the state after each assignment.</div><div><b>🏛 IN REALITY</b>A mathematical equation states a relationship. An assignment changes what a name refers to.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="constants"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>A constant is a promise</h2><div class="two-col"><div><pre class="code">TICKET_PRICE = 12
+tickets = 3
+total = TICKET_PRICE * tickets</pre></div><div><div class="rule">The ticket count changes between sales. The price is fixed for this version of the program.</div><div class="rule">One named rate avoids scattered “magic numbers”. When next term’s price changes, update one definition.</div><div class="rule">Python will allow a later TICKET_PRICE = 15. Uppercase is a convention: keep your own promise.</div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>A constant’s value does not change during execution. Explain a maintenance benefit in the given context.</div><div><b>🏛 IN REALITY</b>Some languages enforce constants. Plain uppercase names in Python do not.</div></div>
+</section><section><section class="lt" data-background-color="#F4F6FB" id="types"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Four Python types. Five examples.</h2><div class="two-col"><div><table class="xt"><tr><th>Python type</th><th>Example</th></tr><tr><td>int</td><td>42</td></tr><tr><td>float</td><td>3.14</td></tr><tr><td>bool</td><td>True / False</td></tr><tr><td>str</td><td>"A" and "Ada"</td></tr></table></div><div><div class="pycell" id="cell-types"><script class="pysrc" type="text/plain">print(type(42))
+print(type(3.14))
+print(type(True))
+print(type("A"))
+print(type("Ada"))</script></div></div></div><a class="dig-link" href="#/objects">↓ Can two names point to the same thing?</a><div class="lanes"><div><b>📝 IN THE EXAM</b>Choose a type by the value and operations required.</div><div><b>🏛 IN REALITY</b>Python uses str for text of any length, including one character or empty text.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" data-hole="true" id="objects"><div class="badges"><span class="bg">OPTIONAL INVESTIGATION</span></div><div class="bar"></div><h2>↓ Two names. One object?</h2><div class="two-col"><div><div class="rule">Predict the two identity comparisons. Then run.</div><div class="rule">b = a makes another name refer to the same object. b = b + 1 then binds b to the result. Does a change?</div><div class="rule">Compare identities; do not memorise the printed number. The values are implementation-dependent.</div></div><div><div class="pycell" id="cell-objects"><script class="pysrc" type="text/plain">a = 214
+b = a
+print(id(a) == id(b))
+b = b + 1
+print(a, b)
+print(id(a) == id(b))</script></div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>An optional Python investigation; exam state traces still track values.</div><div><b>🏛 IN REALITY</b>id() identifies an object during its lifetime. It is not a guarantee of a named variable’s physical RAM address.</div></div><a class="return-link" href="#/types">↑ Return to the main idea</a>
+</section></section><section class="lt" data-background-color="#F4F6FB" id="char"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>One character is still text</h2><div class="train"><div class="carriage solo">A</div><span>   str, length 1   </span><div class="carriage">A</div><div class="carriage">d</div><div class="carriage">a</div><span>   str, length 3   </span></div><div class="rule">A grade code can be one character. A person’s name can contain many. Both are str.</div><div class="rule">Python accepts either quote style: 'A' and "A" represent the same text.</div><div class="rule">The empty string "" is text of length zero.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Distinguish text from a numeric value when tracing Python.</div><div><b>🏛 IN REALITY</b>A character is not universally one byte; encoding determines its storage.</div></div>
+</section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="date-al"><div class="badges"><span class="bg">AS 9618</span></div><div class="bar"></div><h2>AS: a Python calendar value</h2><div class="two-col"><div><div class="rule">A date object represents a valid calendar day. A string is only text.</div><div class="rule">Predict the date and type. Run, then try day 31 in September.</div><div class="rule">date(year, month, day) uses three integer arguments. Read the error for an impossible date.</div></div><div><div class="pycell" id="cell-date"><script class="pysrc" type="text/plain">from datetime import date
+visit_date = date(2026, 9, 20)
+print(visit_date)
+print(type(visit_date))</script></div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>Use the requested Python representation in this practice.</div><div><b>🏛 IN REALITY</b>datetime.date is a library type; its printed order is year-month-day.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="names"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Names help the next reader</h2><div class="two-col"><div><div class="rule">Use names that explain their role: ticket_price and ticket_count are easy to distinguish.</div><div class="rule">Conventional short names can be clear: x and y for coordinates, i for an index. A single letter is not automatically wrong.</div><div class="rule">Explain intent in comments. “# add one” repeats the code; “# count this accepted ticket” explains its purpose.</div></div><div><div class="pycell" id="cell-names"><script class="pysrc" type="text/plain">name = "Ada"       # str
+age = 17           # int
+height = 1.62      # float
+grade = "A"        # one-character str
+is_adult = age >= 18
+print(name, age, height, grade, is_adult)</script></div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>Meaningful identifiers and useful comments support maintainability. They are not a fixed automatic mark per line.</div><div><b>🏛 IN REALITY</b>Type comments here are a learning scaffold. Python style commonly uses snake_case; consistent naming helps the next reader.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="input-fail"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>The inbox delivers text</h2><div class="two-col"><div><div class="rule">Predict: enter 21. Will the program print 22?</div><div class="rule">Run before explaining. The input characters form a string; adding an integer to that string raises TypeError.</div><div class="rule">Try another integer-looking input. The text still needs conversion.</div></div><div><div class="pycell" id="cell-input-bad"><script class="pysrc" type="text/plain">age = input("How old are you? ")
+print(age + 1)</script></div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>Distinguish a numeric value from a string containing digits.</div><div><b>🏛 IN REALITY</b>Python input() returns a string. Text concatenation and numerical addition are different operations.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="input-fix"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Convert before calculating</h2><div class="two-col"><div><div class="rule">Read text → convert → calculate → output.</div><div class="rule">Enter 21. Then try 2.5 and explain why the second run fails.</div><div class="rule">int() can convert an integer string. It does not make every input valid. Assume valid integer input only when the task allows it.</div></div><div><div class="pycell" id="cell-input-good"><script class="pysrc" type="text/plain">age = int(input("How old are you? "))
+print(f"Age next year: {age + 1}")</script></div></div></div><div class="lanes"><div><b>📝 IN THE EXAM</b>Choose the correct data type and clear output for the stated task.</div><div><b>🏛 IN REALITY</b>int("2.5") raises ValueError. Input validation and error recovery need extra instructions.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="plan"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Before code: follow the data</h2><div class="steps"><div>1. Input a name</div><span>→</span><div>2. Input two whole numbers</div><span>→</span><div>3. Add the numbers</div><span>→</span><div>4. Output name and sum</div></div><div class="rule"><b>1. Draw your structure first.</b> Copy these four steps as a flowchart or write structured English. Trace Lin, −4, 9 through it.</div><div class="rule"><b>2. Then write the sequence.</b> What value must each step leave ready for the next?</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Sequence executes statements in order. A trace records the values after each step.</div><div><b>🏛 IN REALITY</b>Planning the data flow makes the code a translation of decisions already made.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="program"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>Now make the plan run</h2><div class="pycell side" id="cell-program"><script class="pysrc" type="text/plain">name = input("What is your name? ")
+a = int(input("First number? "))
+b = int(input("Second number? "))
+total = a + b
+print(f"{name}, the sum is {total}")</script></div><div class="rule">Predict → Run → Investigate: remove one int(), then explain the failure and restore it.</div><div class="rule">Modify the plan first, then the code: read three whole numbers and output their sum. Use Reset to restore the starter.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Output the information requested, in the required order.</div><div><b>🏛 IN REALITY</b>f-strings insert values into a message. The displayed code assumes valid integer inputs.</div></div>
+</section><section class="lt" data-background-color="#F4F6FB" id="game"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>🎮 Predict or Perish</h2><div class="game-nav"><button id="g-back">← Back</button><button id="g-skip">Skip →</button><button id="g-retry">Retry stage</button><button id="g-new">New game</button><span id="g-progress"></span></div><div id="g-body"></div><div aria-live="polite" class="game-feedback" id="g-feedback"></div><button id="g-check">Commit &amp; run</button> <button id="g-next">Next →</button><div class="lanes"><div><b>📝 IN THE EXAM</b>Fresh authored rounds: commit to an answer, then use the evidence to correct it.</div><div><b>🏛 IN REALITY</b>Output rounds run real Python. Retry is part of learning; the next stage waits for your command.</div></div>
+</section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="lens-ig"><div class="badges"><span class="bg">IGCSE 0478</span></div><div class="bar"></div><h2>IGCSE: Python-facing question shapes</h2><table class="xt"><tr><th>Shape</th><th>Stem</th><th>Points here</th><th>Watch for</th></tr><tr><td>Trace / predict</td><td>State the output</td><td>1 per result</td><td>Old value used on the right</td></tr><tr><td>Types / input</td><td>Explain the failure; repair it</td><td>1 + 2</td><td>Digits inside text are still text</td></tr><tr><td>Maintainability</td><td>Explain a benefit of a named constant</td><td>1 per distinct idea</td><td>Give a contextual benefit</td></tr><tr><td>Write code</td><td>Use Python for this task</td><td>Read the task</td><td>Convert input; output what was requested</td></tr></table><div class="rule">This lesson rehearses Python. Use Python in an exam only where the question permits program code.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Answer the stated question; these practice points are not universal paper tariffs.</div><div><b>🏛 IN REALITY</b>A working program and an explanation of why it works are different things to demonstrate.</div></div>
+</section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="reason-ig"><div class="badges"><span class="bg">IGCSE 0478</span></div><div class="bar"></div><h2>IGCSE: explain the idea</h2><div class="rule">Fresh authored rehearsal. Write before comparing.</div><div class="rule">Explain what an int and a float represent; give a Python example of each. [4]</div><div class="lanes"><div><b>📝 IN THE EXAM</b>A correct term must express a correct idea. Negated keywords do not earn marks.</div><div><b>🏛 IN REALITY</b>These explanations need human judgment, not a word-search score.</div></div>
+</section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="reason-answer-ig"><div class="badges"><span class="bg">IGCSE 0478</span></div><div class="bar"></div><h2>IGCSE: compare the meaning</h2><div class="rule">int: a whole number [1], e.g. −8 [1]. float: a floating-point approximation to a real number [1], e.g. 6.25 [1].</div><div class="rule">Cap at 4. Credit equivalent explanations and other valid examples.</div><div class="rule">Compare meaning with a partner; no automatic prose score.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Apply the stated cap. A model answer is one valid wording, not the only wording.</div><div><b>🏛 IN REALITY</b>Explain the mechanism: how exactly does the name or type help this program?</div></div>
+</section><section class="lt" data-aud="ig" data-background-color="#F4F6FB" id="vocab-ig"><div class="badges"><span class="bg">IGCSE 0478</span></div><div class="bar"></div><h2>Vocabulary · 词汇</h2><table class="xt"><tr><th>English / Python</th><th>中文 · pinyin</th><th>Meaning</th></tr><tr><td>variable / constant</td><td>变量 / 常量 · biàn liàng / cháng liàng</td><td>May change / fixed by design</td></tr><tr><td>int / float</td><td>整数 / 浮点数 · zhěng shù / fú diǎn shù</td><td>Whole / floating-point number</td></tr><tr><td>str / bool</td><td>字符串 / 布尔值 · zì fú chuàn / bù ěr zhí</td><td>Text / True or False</td></tr><tr><td>assignment</td><td>赋值 · fù zhí</td><td>Evaluate, then update the name</td></tr><tr><td>initialisation</td><td>初始化 · chū shǐ huà</td><td>Give a starting value</td></tr></table>
+</section><section class="dk" data-aud="ig" data-background-color="#151B3C" id="recap-ig"><div class="badges"><span class="bg">IGCSE 0478</span></div><div class="bar"></div><h2>IGCSE: you can now name the magic</h2><div class="rule">Names: variables may change; uppercase constants express a promise.</div><div class="rule">Types: int, float, bool and str determine which operations make sense.</div><div class="rule">Sequence: plan the data flow, then execute statements in order.</div><div class="rule">Input: Python returns text. Convert it when the calculation needs a number.</div>
+</section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="lens-al"><div class="badges"><span class="bg">AS 9618</span></div><div class="bar"></div><h2>AS: Python-facing question shapes</h2><table class="xt"><tr><th>Shape</th><th>Stem</th><th>Points here</th><th>Watch for</th></tr><tr><td>Trace / predict</td><td>State the output</td><td>1 per result</td><td>Old value used on the right</td></tr><tr><td>Types / input</td><td>Explain the failure; repair it</td><td>1 + 2</td><td>Digits inside text are still text</td></tr><tr><td>Maintainability</td><td>Explain a benefit of a named constant</td><td>1 per distinct idea</td><td>Give a contextual benefit</td></tr><tr><td>Write code</td><td>Use Python for this task</td><td>Read the task</td><td>Convert input; output what was requested</td></tr></table><div class="rule">This lesson rehearses Python. Use Python in an exam only where the question permits program code.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Answer the stated question; these practice points are not universal paper tariffs.</div><div><b>🏛 IN REALITY</b>A working program and an explanation of why it works are different things to demonstrate.</div></div>
+</section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="reason-al"><div class="badges"><span class="bg">AS 9618</span></div><div class="bar"></div><h2>AS: explain the idea</h2><div class="rule">Fresh authored rehearsal. Write before comparing.</div><div class="rule">A museum program repeats an admission price. Suggest a better representation [1] and explain three maintenance benefits [3].</div><div class="lanes"><div><b>📝 IN THE EXAM</b>A correct term must express a correct idea. Negated keywords do not earn marks.</div><div><b>🏛 IN REALITY</b>These explanations need human judgment, not a word-search score.</div></div>
+</section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="reason-answer-al"><div class="badges"><span class="bg">AS 9618</span></div><div class="bar"></div><h2>AS: compare the meaning</h2><div class="rule">A named constant [1]. Python convention uses an uppercase name.</div><div class="rule">Any three, max 3: define the rate once; avoid inconsistent rates; update one definition for a future price change; make a calculation’s purpose clearer.</div><div class="rule">A later edit to the program differs from a change during one execution.</div><div class="rule">Compare meaning with a partner; no automatic prose score.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>Apply the stated cap. A model answer is one valid wording, not the only wording.</div><div><b>🏛 IN REALITY</b>Explain the mechanism: how exactly does the name or type help this program?</div></div>
+</section><section class="lt" data-aud="al" data-background-color="#F4F6FB" id="vocab-al"><div class="badges"><span class="bg">AS 9618</span></div><div class="bar"></div><h2>Vocabulary · 词汇</h2><table class="xt"><tr><th>English / Python</th><th>中文 · pinyin</th><th>Meaning</th></tr><tr><td>variable / constant</td><td>变量 / 常量 · biàn liàng / cháng liàng</td><td>May change / fixed by design</td></tr><tr><td>int / float</td><td>整数 / 浮点数 · zhěng shù / fú diǎn shù</td><td>Whole / floating-point number</td></tr><tr><td>str / bool</td><td>字符串 / 布尔值 · zì fú chuàn / bù ěr zhí</td><td>Text / True or False</td></tr><tr><td>assignment</td><td>赋值 · fù zhí</td><td>Evaluate, then update the name</td></tr><tr><td>initialisation</td><td>初始化 · chū shǐ huà</td><td>Give a starting value</td></tr></table>
+</section><section class="dk" data-aud="al" data-background-color="#151B3C" id="recap-al"><div class="badges"><span class="bg">AS 9618</span></div><div class="bar"></div><h2>AS: you can now name the magic</h2><div class="rule">Names: variables may change; uppercase constants express a promise.</div><div class="rule">Types: int, float, bool and str determine which operations make sense.</div><div class="rule">Sequence: plan the data flow, then execute statements in order.</div><div class="rule">Input: Python returns text. Convert it when the calculation needs a number.</div>
+</section><section class="dk" data-background-color="#151B3C" id="guess"><div class="badges"><span class="bg">IG + AS</span></div><div class="bar"></div><h2>It decides. It repeats.</h2><div class="pycell side" id="cell-guess"><script class="pysrc" type="text/plain">secret = 7
+guess = 0
+while guess != secret:
+    guess = int(input("Guess (1–10): "))
+    if guess < secret:
+        print("Higher!")
+    elif guess > secret:
+        print("Lower!")
+print("Got it!")</script></div><div class="rule">Try 3, 10, 6, then 7. How does the same program give a different reply?</div><div class="rule">You have used both moves in Karel. Next lesson: selection and iteration.</div><div class="lanes"><div><b>📝 IN THE EXAM</b>A preview of the next lesson, not a new assessed loop-writing task today.</div><div><b>🏛 IN REALITY</b>This short preview assumes integer input. The output panel scrolls; Stop cancels the program.</div></div>
+</section><section class="dk" data-aud="ig" data-background-color="#151B3C" id="ledger-ig"><div class="badges"><span class="bg">IGCSE 0478</span></div><div class="bar"></div><h2>🧾 Outside the exam hall</h2><div class="rule">Keep: trace values forward; choose types by purpose; convert input deliberately.</div><div class="rule">Python-facing questions: predict output, repair a conversion, explain names and write a short sequence.</div><div class="rule">Reality: names refer to objects; uppercase and comments are conventions, not locks.</div><div class="rule">Exit: predict x = 4; x = x + 3; print(x). Explain why input("Number? ") + 3 fails.</div>
+</section><section class="dk" data-aud="al" data-background-color="#151B3C" id="ledger-al"><div class="badges"><span class="bg">AS 9618</span></div><div class="bar"></div><h2>🧾 Outside the exam hall</h2><div class="rule">Keep: trace values forward; choose types by purpose; convert input deliberately.</div><div class="rule">Python-facing questions: predict output, repair a conversion, explain names and write a short sequence.</div><div class="rule">Reality: names refer to objects; uppercase and comments are conventions, not locks.</div><div class="rule">Exit: predict x = 4; x = x + 3; print(x). Explain why input("Number? ") + 3 fails.</div>
+</section></div></div>
+<button id="fs-btn" onclick="document.documentElement.requestFullscreen().catch(()=&gt;{})">⛶ Fullscreen</button>
+<div id="py-chip">🐍 waking Python…</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script><script>var AUD=new URLSearchParams(location.search).get('aud');if(!['ig','al'].includes(AUD))AUD=null;
+function setAud(a){let u=new URL(location.href);if(a)u.searchParams.set('aud',a);else u.searchParams.delete('aud');u.hash='/title';location.href=u.href}
+(function(){if(!AUD){document.querySelectorAll('.slides>section').forEach((x,i)=>{if(i)x.remove()});document.getElementById('objectives')?.remove();document.getElementById('obj-btn')?.remove();document.getElementById('py-chip')?.remove();return}document.querySelectorAll('[data-aud]').forEach(x=>{if(x.dataset.aud!==AUD)x.remove()});document.querySelectorAll('.slides>section:not([id])').forEach(x=>{if(!x.querySelector('section'))x.remove()});let chip=document.getElementById('aud-chip');chip.hidden=false;chip.innerHTML=(AUD==='ig'?'IGCSE 0478':'AS 9618')+' route · <a href="javascript:void(0)" onclick="setAud(null)">Change route</a>';document.getElementById('aud-btns').hidden=true;document.getElementById('aud-sub').textContent='→ Main lesson · ↓ Optional investigations';})();
+</script><script>/* Runs real Python in a disposable worker: Stop can cancel computation as well as input. */
+const workerSource = String.raw`
+let py,answer;
+self.__answerInput=(prompt)=>new Promise(resolve=>{answer=resolve;postMessage({kind:'input',prompt})});
+self.onmessage=async e=>{
+ const m=e.data;
+ if(m.kind==='input'){answer?.(m.value);answer=null;return}
+ if(m.kind==='boot'){
+  try{
+   importScripts('https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js');
+   py=await loadPyodide();
+   py.runPython("import ast, builtins, js\nasync def __ainput(prompt=''):\n    value = await js.__answerInput(str(prompt))\n    print(str(prompt) + str(value))\n    return str(value)\nbuiltins.__ainput = __ainput\nclass InputTransform(ast.NodeTransformer):\n    def visit_Call(self, node):\n        self.generic_visit(node)\n        if isinstance(node.func, ast.Name) and node.func.id == 'input':\n            node.func.id = '__ainput'\n            return ast.copy_location(ast.Await(value=node), node)\n        return node\ndef transform_input(source):\n    return ast.unparse(ast.fix_missing_locations(InputTransform().visit(ast.parse(source))))\n");
+   postMessage({kind:'ready'});
+  }catch(e){postMessage({kind:'bootError',text:String(e)})}return;
+ }
+ if(m.kind==='run'){
+  let ns=py.toPy({}),error='';
+  let emitted=0;const emit=s=>{if(emitted++<200)postMessage({kind:'output',text:s});else if(emitted===201)postMessage({kind:'output',text:'[Output limit reached. Stop the program to edit it.]'})};
+  py.setStdout({batched:emit});
+  py.setStderr({batched:emit});
+  try{let trans=py.globals.get('transform_input'),src;try{src=trans(m.code)}finally{trans.destroy()};await py.runPythonAsync(src,{globals:ns})}
+  catch(e){error=String(e.message||e).trim().split('\n').filter(Boolean).pop()}
+  finally{ns.destroy();postMessage({kind:'done',error})}
+ }
+};`;
+let pyWorker=null,pyReady=false,pyBusy=false,currentOut=null,activeRun=null,runTimer=null;
+function setRunButtons(){document.querySelectorAll('.pyrun').forEach(b=>{b.disabled=!pyReady||pyBusy;b.textContent=pyReady?'▶ Run':'Loading…'});document.querySelectorAll('.pyreset').forEach(b=>b.disabled=pyBusy);}
+function clearRunTimer(){clearTimeout(runTimer);runTimer=null}
+function armRunTimer(){clearRunTimer();runTimer=setTimeout(()=>stopPy('Stopped after 20 seconds of computation. Check your loop, then run again.'),20000)}
+function emitText(t){if(!currentOut)return;currentOut.appendChild(document.createTextNode(t+'\n'));while(currentOut.childNodes.length>100)currentOut.firstChild.remove();currentOut.scrollTop=currentOut.scrollHeight;}
+function completeRun(error){clearRunTimer();let job=activeRun,out=currentOut;activeRun=null;pyBusy=false;currentOut=null;setRunButtons();job?.done?.(!!error,out?.textContent||'',error)}
+function bootPython(){
+ pyReady=false;setRunButtons();let chip=document.getElementById('py-chip');chip.textContent='🐍 Loading Python…';
+ const url=URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'}));const w=new Worker(url);URL.revokeObjectURL(url);pyWorker=w;
+ w.onmessage=e=>{if(w!==pyWorker)return;let m=e.data;
+  if(m.kind==='ready'){pyReady=true;chip.textContent='🐍 Python ready';chip.className='ready';setRunButtons();return}
+  if(m.kind==='bootError'){chip.textContent='Python unavailable · reload to retry';if(pyBusy){emitText('Runtime failed to load.');completeRun('load failed')}return}
+  if(m.kind==='output'){emitText(m.text);return}
+  if(m.kind==='input'){
+   clearRunTimer();if(!currentOut)return;
+   if(activeRun.inputs?.length){let value=activeRun.inputs.shift();w.postMessage({kind:'input',value});armRunTimer();return}
+   let row=document.createElement('span'),label=document.createElement('span'),input=document.createElement('input');label.textContent=m.prompt;input.className='pyin';input.setAttribute('aria-label',m.prompt||'Python input');input.autocomplete='off';row.append(label,input);currentOut.append(row);currentOut.scrollTop=currentOut.scrollHeight;input.focus();
+   input.onkeydown=ev=>{ev.stopPropagation();if(ev.key==='Enter'){const value=input.value;row.remove();w.postMessage({kind:'input',value});armRunTimer()}};return;
+  }
+  if(m.kind==='done'){if(m.error)emitText('Error: '+m.error);if(currentOut&&!currentOut.textContent)emitText('(no output)');completeRun(m.error)}
+ };
+ w.onerror=()=>{if(w!==pyWorker)return;chip.textContent='Python unavailable · reload to retry';pyReady=false;if(pyBusy){emitText('Runtime error.');completeRun('worker error')}};
+ w.postMessage({kind:'boot'});
+}
+function runPy(code,out,done,inputs){
+ if(pyBusy||!pyReady){out.hidden=false;out.textContent=pyBusy?'Another program is running. Stop it or wait.':'Python is loading. Try again when ready.';return false}
+ pyBusy=true;currentOut=out;out.hidden=false;out.textContent='';activeRun={done,inputs:inputs?[...inputs]:null};setRunButtons();armRunTimer();pyWorker.postMessage({kind:'run',code});return true;
+}
+function stopPy(message='Stopped. You can edit and run again.'){
+ if(!pyBusy)return;pyWorker.terminate();pyWorker=null;pyReady=false;currentOut?.querySelectorAll('.pyin').forEach(x=>x.parentElement.remove());emitText(message);completeRun('__stopped__');bootPython();
+}
+function initPyCells(){
+ document.querySelectorAll('.pycell').forEach(c=>{
+  let source=c.querySelector('.pysrc').textContent;
+  c.innerHTML='<div class="pybar"><span class="pydots"><i style="background:#f0655b"></i><i style="background:#f2b53c"></i><i style="background:#17b3a3"></i></span><button class="pyrun">Loading…</button><button class="pyunlock">Investigate</button><button class="pystop">■ Stop</button><button class="pyreset">Reset</button><span class="pystate">Predict first</span></div><div class="'+(c.classList.contains('side')?'pyrow':'')+'"><textarea class="pyta" aria-label="Python code" spellcheck="false" readonly></textarea><pre class="pyout" aria-live="polite">Predict, then Run.</pre></div>';
+  const ta=c.querySelector('textarea'),out=c.querySelector('.pyout'),state=c.querySelector('.pystate');ta.value=source;
+  c.querySelector('.pyunlock').onclick=()=>{ta.readOnly=false;state.textContent='Editable';ta.focus()};
+  c.querySelector('.pyrun').onclick=()=>runPy(ta.value,out);
+  c.querySelector('.pystop').onclick=()=>{if(currentOut===out)stopPy()};
+  c.querySelector('.pyreset').onclick=()=>{if(pyBusy)return;ta.value=source;ta.readOnly=true;out.textContent='Predict, then Run.';state.textContent='Predict first'};
+  ta.oninput=()=>{out.textContent='Code changed. Run to test this version.'};
+  ta.onkeydown=e=>{e.stopPropagation();if(e.key==='Tab'&&!ta.readOnly){e.preventDefault();ta.setRangeText('    ',ta.selectionStart,ta.selectionEnd,'end');ta.dispatchEvent(new Event('input'))}};
+ });bootPython();
+}
+</script><script>function initGame(){
+ const $=s=>document.querySelector(s);let index=0,chosen=null,picked=new Set(),passed=false,token=0;
+ const rounds=[
+ {code:'for i in range(5):\n    move()',q:'You wrote this for Karel. Which structure repeats the move?',opts:['A loop','A variable','An input','A data type'],a:0,why:'A loop repeats instructions. Next lesson names its forms.'},
+ {code:'score = 3\nscore = score + 2',q:'score holds a value that changes. It is a…',opts:['A constant','A variable','An output','A bug'],a:1,why:'A variable holds a value that can change.'},
+ {code:'front_is_clear()\n# returns True or False',q:'Which kind of value answers this question?',opts:['str','int','bool','float'],a:2,why:'A Boolean has two possible values: True and False.'},
+ {code:'x = 5\nx = x + 1\nprint(x)',q:'Predict the output.',opts:['5','6','x + 1','An error'],a:1,run:true,expected:'6',why:'The right-hand expression uses the old value; x then refers to 6.'},
+ {code:'print("1" + "1")',q:'Predict the output.',opts:['2','11','1 + 1','An error'],a:1,run:true,expected:'11',why:'String + joins text. It does not add two numbers.'},
+ {code:'name = "Ada"\nprint(f"Hello {name}")',q:'Predict the output.',opts:['Hello name','Hello {name}','Hello Ada','An error'],a:2,run:true,expected:'Hello Ada',why:'The f-string inserts the value of name.'},
+ {code:'age = input("Age? ")\nprint(age + 1)',q:'The entered text is 21. Predict the result.',opts:['22','It asks again','A TypeError','Age? 1'],a:2,run:true,inputs:['21'],expectedError:'TypeError',why:'input returns text. Adding an integer to it is invalid.'},
+ {boss:true,q:'Two input lines need conversion. Select both before checking.'}
+ ];
+ const lines=['price = input("Price? ")','count = input("How many? ")','total = price * count','print(f"Total: {total}")'];
+ const fixed='price = int(input("Price? "))\ncount = int(input("How many? "))\ntotal = price * count\nprint(f"Total: {total}")';
+ function leave(){token++;if(currentOut?.id==='g-output')stopPy();passed=false;chosen=null;picked.clear()}
+ function render(){
+  $('#g-progress').textContent=index<rounds.length?`${index+1} / ${rounds.length}`:'Complete';$('#g-feedback').textContent='';$('#g-next').disabled=true;$('#g-back').disabled=index===0;$('#g-check').disabled=false;
+  if(index===rounds.length){$('#g-body').innerHTML='<div class="rule"><b>You predicted the machine.</b><br>Names hold values. Types determine valid operations. Read → predict → run → explain.</div>';$('#g-check').disabled=true;$('#g-skip').disabled=true;return}
+  $('#g-skip').disabled=false;let r=rounds[index];$('#g-check').textContent=r.boss?'Repair & run':r.run?'Commit & run':'Check';
+  $('#g-body').innerHTML='<div class="game-main"><div><pre class="code" id="g-code"></pre><pre id="g-output" class="pyout" hidden></pre></div><div><h3 id="g-question"></h3><div id="g-options" class="options"></div></div></div>';
+  $('#g-question').textContent=r.q;
+  if(r.boss){$('#g-code').remove();lines.forEach((line,i)=>{let b=document.createElement('button');b.className='linepick';b.textContent=(i+1)+'. '+line;b.onclick=()=>{if(pyBusy)return;picked.has(i)?picked.delete(i):picked.add(i);b.classList.toggle('selected',picked.has(i));passed=false;$('#g-next').disabled=true;$('#g-feedback').textContent='Selection changed. Check again.';$('#g-output').hidden=true};$('#g-output').before(b)});$('#g-options').textContent='Use whole-number prices and counts. After repair, test price 6 and count 4.'}
+  else{$('#g-code').textContent=r.code;r.opts.forEach((v,i)=>{let b=document.createElement('button');b.textContent=v;b.onclick=()=>{if(pyBusy)return;chosen=i;$('#g-options').querySelectorAll('button').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');passed=false;$('#g-next').disabled=true;$('#g-feedback').textContent='Prediction changed. Commit to test it.';$('#g-output').hidden=true};$('#g-options').append(b)})}
+ }
+ function success(ok,msg){passed=ok;$('#g-feedback').textContent=(ok?'✓ ':'Try again: ')+msg;$('#g-next').disabled=!ok;$('#g-check').disabled=false}
+ $('#g-check').onclick=()=>{
+  if(pyBusy)return;let r=rounds[index];if(!r)return;
+  if(r.boss){if(picked.size!==2||!picked.has(0)||!picked.has(1)){success(false,'Convert both input results; multiplying two strings is invalid.');return}
+   let my=token;$('#g-check').disabled=true;if(!runPy(fixed,$('#g-output'),(bad,out,err)=>{if(my!==token)return;success(!bad&&out.includes('Total: 24'),bad?'Run did not complete; retry when ready.':'Both inputs were converted. Actual Python prints Total: 24.')},['6','4']))$('#g-check').disabled=false;return}
+  if(chosen===null){success(false,'Choose a prediction first.');return}
+  if(!r.run){success(chosen===r.a,r.why);return}
+  let answer=chosen,my=token;$('#g-check').disabled=true;if(!runPy(r.code,$('#g-output'),(bad,out,err)=>{if(my!==token)return;let verified=r.expectedError?bad&&err.includes(r.expectedError):!bad&&out.trim()===r.expected;success(verified&&answer===r.a,verified?r.why:'Run incomplete or unexpected. Retry when Python is ready.')},r.inputs))$('#g-check').disabled=false;
+ };
+ $('#g-next').onclick=()=>{if(!passed)return;leave();index++;render()};$('#g-skip').onclick=()=>{leave();index=Math.min(rounds.length,index+1);render()};$('#g-back').onclick=()=>{leave();index=Math.max(0,index-1);render()};$('#g-retry').onclick=()=>{leave();render()};$('#g-new').onclick=()=>{leave();index=0;render()};
+ window.cancelGameRun=()=>{if(currentOut?.id==='g-output'){leave();render()}};render();
+}
+</script><script>function initChecks() {}</script><script>Reveal.initialize({hash:true,slideNumber:'c/t',width:1280,height:720,margin:.04,center:false,transition:matchMedia('(prefers-reduced-motion: reduce)').matches?'none':'fade',transitionSpeed:'fast',backgroundTransition:'none',plugins:[RevealNotes]}).then(()=>{if(!AUD)return;initPyCells();initGame();initChecks()});
+Reveal.on('slidechanged',()=>{if(pyBusy){cancelGameRun?.();if(pyBusy)stopPy('Stopped when you left the slide. Run again to restart.')}});
+</script><script type="application/json" id="course-routes">{"ig": {"slides": 24, "cells": 9}, "al": {"slides": 25, "cells": 10}}</script><script type="application/json" id="paper-spend">[]</script></body>
+</html>
